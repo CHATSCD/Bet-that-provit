@@ -837,6 +837,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_18_verified: boolean
+          is_admin: boolean
           stripe_account_id: string | null
           stripe_customer_id: string | null
           total_earned: number
@@ -853,6 +854,7 @@ export type Database = {
           display_name?: string | null
           id: string
           is_18_verified?: boolean
+          is_admin?: boolean
           stripe_account_id?: string | null
           stripe_customer_id?: string | null
           total_earned?: number
@@ -869,6 +871,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_18_verified?: boolean
+          is_admin?: boolean
           stripe_account_id?: string | null
           stripe_customer_id?: string | null
           total_earned?: number
