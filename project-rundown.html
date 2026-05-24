@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>illProvIt — Complete Project Rundown</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Oswald:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --green: #00FF88;
+  --blue:  #00CFFF;
+  --red:   #FF003C;
+  --dark:  #060606;
+  --dark2: #0a0a0a;
+  --dark3: #0f0f0f;
+  --border: #1a1a1a;
+}
+body {
+  background: var(--dark);
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  padding: 40px 20px 80px;
+}
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.header-logo {
+  font-family: 'Black Ops One', sans-serif;
+  font-size: 13px;
+  letter-spacing: 4px;
+  color: var(--green);
+  text-shadow: 0 0 20px var(--green);
+  margin-bottom: 8px;
+}
+.header-title {
+  font-family: 'Black Ops One', sans-serif;
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.header-sub {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #333;
+  text-transform: uppercase;
+}
+.container { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+/* SUMMARY STATS */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.stat {
+  background: var(--dark2);
+  padding: 20px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.stat-num {
+  font-family: 'Black Ops One', sans-serif;
+  font-size: 28px;
+  display: block;
+}
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #333;
+  text-transform: uppercase;
+  display: block;
+  margin-top: 4px;
+}
+
+/* SECTION */
+.section {
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--dark3);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.dot-blue  { background: var(--blue);  box-shadow: 0 0 8px var(--blue); }
+.dot-red   { background: var(--red);   box-shadow: 0 0 8px var(--red); }
+.dot-white { background: #555; }
+.dot-yellow { background: #FFD700; box-shadow: 0 0 8px #FFD700; }
+
+.section-title {
+  font-family: 'Black Ops One', sans-serif;
+  font-size: 16px;
+  color: #fff;
+}
+.section-badge {
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 4px 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 2px;
+}
+.badge-done    { background: rgba(0,255,136,0.1); color: var(--green); border: 1px solid rgba(0,255,136,0.3); }
+.badge-partial { background: rgba(255,215,0,0.1); color: #FFD700; border: 1px solid rgba(255,215,0,0.3); }
+.badge-todo    { background: rgba(255,0,60,0.1); color: var(--red); border: 1px solid rgba(255,0,60,0.3); }
+.badge-info    { background: rgba(0,207,255,0.1); color: var(--blue); border: 1px solid rgba(0,207,255,0.3); }
+
+.section-body { padding: 24px; }
+
+/* CHECKLIST */
+.checklist { display: flex; flex-direction: column; gap: 10px; }
+.check-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.check-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.check-icon.done  { color: var(--green); }
+.check-icon.todo  { color: var(--red); }
+.check-icon.part  { color: #FFD700; }
+.check-text { font-size: 14px; color: #777; line-height: 1.5; }
+.check-text strong { color: #ccc; }
+.check-text .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: #111;
+  padding: 1px 8px;
+  color: var(--blue);
+  border-radius: 2px;
+  margin-left: 4px;
+}
+.check-text .gtag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: rgba(0,255,136,0.08);
+  padding: 1px 8px;
+  color: var(--green);
+  border-radius: 2px;
+  margin-left: 4px;
+}
+
+/* CODE BOX */
+.code-box {
+  background: #050505;
+  border: 1px solid #111;
+  padding: 20px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #555;
+  white-space: pre-wrap;
+  word-break: break-word;
+  position: relative;
+}
+.code-box .c-green { color: var(--green); }
+.code-box .c-blue  { color: var(--blue); }
+.code-box .c-red   { color: var(--red); }
+.code-box .c-white { color: #ccc; }
+.code-box .c-yellow { color: #FFD700; }
+
+.copy-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: 1px solid #222;
+  color: #444;
+  font-family: 'Oswald', sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.copy-btn:hover { border-color: var(--green); color: var(--green); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); background: rgba(0,255,136,0.08); }
+
+/* DIVIDER */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 8px 0;
+}
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+.divider-label { font-size: 9px; letter-spacing: 5px; color: #1a1a1a; text-transform: uppercase; }
+
+/* GRID */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--green);
+  color: var(--dark);
+  font-family: 'Oswald', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 12px 28px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast">✓ Copied</div>
+
+<div class="header">
+  <div class="header-logo">@illprovit · #BetThat</div>
+  <h1 class="header-title">Complete Project Rundown</h1>
+  <p class="header-sub">Everything Built · Everything Needed · Claude Code Prompt</p>
+</div>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-num" style="color:var(--green)">✓</span>
+      <span class="stat-label">Brand Identity</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" style="color:var(--green)">✓</span>
+      <span class="stat-label">Database Schema</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" style="color:var(--green)">✓</span>
+      <span class="stat-label">Stripe Integration</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" style="color:var(--green)">✓</span>
+      <span class="stat-label">ProvCoins System</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" style="color:var(--green)">✓</span>
+      <span class="stat-label">Landing Page</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" style="color:var(--green)">✓</span>
+      <span class="stat-label">Sales Copy</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" style="color:var(--green)">✓</span>
+      <span class="stat-label">Content Calendar</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" style="color:var(--red)">↻</span>
+      <span class="stat-label">Frontend App</span>
+    </div>
+  </div>
+
+  <!-- SECTION 1: BRAND -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-header-left">
+        <div class="section-dot dot-green"></div>
+        <div class="section-title">Brand Identity</div>
+      </div>
+      <span class="section-badge badge-done">✓ Complete</span>
+    </div>
+    <div class="section-body">
+      <div class="checklist">
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>App Name:</strong> illProvIt <span class="gtag">@illprovit</span></div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>TikTok Handle:</strong> @illprovit (locked down)</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Brand Statement:</strong> "Truth or Dare has been reborn in the meta. You no longer have to be in the same place. You can always challenge your circle from anywhere. And they can always #ProvIt. ........#BetThat!"</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Tagline:</strong> Stop Talking. #ProvIt.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Hashtags:</strong> <span class="gtag">#ProvIt</span> <span class="gtag">#BetThat</span> <span class="gtag">#illProvIt</span></div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Logo:</strong> 4 versions built — Main Circular Seal, Horizontal Banner, App Icon, Glitch versions. RGB neon green + black.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Colors:</strong> <span class="tag">#00FF88 Green</span> <span class="tag">#00CFFF Blue</span> <span class="tag">#FF003C Red</span> <span class="tag">#000000 Black</span></div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Fonts:</strong> Black Ops One (headers), Oswald (body), Bebas Neue (accents)</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon part">◑</div>
+          <div class="check-text"><strong>Domain:</strong> Need to confirm purchase of <span class="tag">illprovit.app</span> or <span class="tag">illprovit.com</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: BUSINESS MODEL -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-header-left">
+        <div class="section-dot dot-green"></div>
+        <div class="section-title">Business Model</div>
+      </div>
+      <span class="section-badge badge-done">✓ Complete</span>
+    </div>
+    <div class="section-body">
+      <div class="checklist">
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Stream 1 — Admin Fee:</strong> $1.99 per member per circle → paid immediately on join → straight to illProvIt</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Stream 2 — #BetThat Fee:</strong> 10% of every pot at payout → deducted automatically</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Stream 3 — ProvCoins:</strong> In-app coin packs from $0.99 to $24.99 → used for power moves</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Stream 4 — Ads:</strong> Google AdMob on free tier between leaderboard refreshes and proof submissions</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Stream 5 — Pro Circle:</strong> $4.99/month → no ads, unlimited members, advanced stats</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Stream 6 — Branded Challenges:</strong> Sponsors pay to host challenges — $500 to $5,000 per challenge</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Fee Structure:</strong> Stripe fees deducted from pot. illProvIt never out of pocket.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: DATABASE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-header-left">
+        <div class="section-dot dot-blue"></div>
+        <div class="section-title">Supabase Database Schema</div>
+      </div>
+      <span class="section-badge badge-done">✓ Complete</span>
+    </div>
+    <div class="section-body">
+      <div class="checklist">
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>users</strong> — profiles, Stripe IDs, coin balance, streaks, stats, badges</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>circles</strong> — full fee structure baked in, $1.99 admin, 10% platform fee, invite codes, status</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>circle_members</strong> — strikes, scores, rankings, payment tracking, elimination</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>proofs</strong> — photo submissions, watermark data, points, #BetThat count</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>betthats</strong> — one per proof per user, no duplicates</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>strikes</strong> — full history, auto-elimination at 3</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>transactions</strong> — every dollar tracked, every direction</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>notifications</strong> — 11 notification types</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>coin_packs</strong> — 5 packs seeded: Starter $0.99 → Legend $24.99</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>coin_transactions</strong> — every coin in and out logged</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>power_moves</strong> — all 7 moves seeded with costs</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>active_power_moves</strong> — shields, bombs, spy mode tracking</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>personal_challenges</strong> — 150 coin targeted challenges</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>strike_bombs</strong> — 2hr countdown, defused/detonated/blocked status</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>badges</strong> — 9 badges seeded: First Blood, Locked In, Undefeated, Big Pot Energy, etc.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>sponsors</strong> — branded challenge infrastructure</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Views:</strong> circle_leaderboard, circle_pot_summary, active_threats, coin_leaderboard</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>Functions:</strong> issue_strike(), calculate_payout(), add_coins(), spend_coins(), use_strike_back(), use_strike_shield(), use_strike_bomb(), use_personal_challenge()</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>RLS:</strong> Row level security on all tables</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon todo">✗</div>
+          <div class="check-text"><strong>Deploy schema</strong> to Supabase dashboard — SQL files ready, just need to be run</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: STRIPE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-header-left">
+        <div class="section-dot dot-green"></div>
+        <div class="section-title">Stripe Connect Integration</div>
+      </div>
+      <span class="section-badge badge-done">✓ Built — Needs Deploy</span>
+    </div>
+    <div class="section-body">
+      <div class="checklist">
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>createCustomer()</strong> — creates Stripe customer on signup</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>createConnectedAccount()</strong> — sets up winner payout account</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>chargeCircleMember()</strong> — charges buy-in + $1.99 admin fee, admin fee goes straight to illProvIt</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>payoutWinner()</strong> — auto-deducts Stripe fees + 10%, transfers remainder to winner bank/debit</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>refundCancelledCircle()</strong> — refunds buy-ins, keeps $1.99 admin fee</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>handleWebhook()</strong> — listens to all Stripe events, handles failed payments</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>calculatePotSummary()</strong> — shows users exact breakdown before joining</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon done">✓</div>
+          <div class="check-text"><strong>createCoinPurchase()</strong> — ProvCoins purchase via Stripe, instant coin credit</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon todo">✗</div>
+          <div class="check-text"><strong>Add env variables</strong> to Vercel — STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon todo">✗</div>
+          <div class="check-text"><strong>Enable Connect</strong> in Stripe dashboard → Platform type = On-demand marketplace</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon todo">✗</div>
+          <div class="check-text"><strong>Set up webhook</strong> endpoint in Stripe dashboard pointing to Vercel URL</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon todo">✗</div>
+          <div class="check-text"><strong>Form illProvIt LLC</strong> — LegalZoom or Incfile, under $200, Mississippi</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: POWER MOVES -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-header-left">
+        <div class="section-dot dot-red"></div>
+        <div class="section-title">ProvCoins + Power Moves</div>
+      </div>
+      <span class="section-badge badge-done">✓ Complete</span>
+    </div>
+    <div class="section-body">
+      <div class="two-col">
+        <div class="checklist">
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>⚡ Strike Back</strong> — 200 coins, removes one strike, once per challenge</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>🎯 Personal Challenge</strong> — 150 coins, target one member, 24hr to complete</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>🛡️ Strike Shield</strong> — 300 coins, blocks next strike or bomb automatically</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>👁️ Spy Mode</strong> — 100 coins, see when someone last submitted proof</div></div>
+        </div>
+        <div class="checklist">
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>🔥 Double Points</strong> — 250 coins, 2x proof points for 24hrs</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>💣 Strike Bomb</strong> — 500 coins, target has 2hrs to prove it or take a strike</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>👑 Crown Flex</strong> — 50 coins, cosmetic crown on proof post 24hrs</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Bomb blocked by Shield</strong> — fully coded, shield auto-triggers</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: MARKETING -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-header-left">
+        <div class="section-dot dot-green"></div>
+        <div class="section-title">Marketing + Content</div>
+      </div>
+      <span class="section-badge badge-done">✓ Complete</span>
+    </div>
+    <div class="section-body">
+      <div class="checklist">
+        <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Landing page</strong> — built, updated with brand statement, ready to deploy to Vercel</div></div>
+        <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Sales copy arsenal</strong> — 7 copy blocks, 5 TikTok scripts, 6 email subjects, 8 taglines, all in copyable boxes</div></div>
+        <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>30-day TikTok content calendar</strong> — 4 phases: seed, build, FOMO, launch</div></div>
+        <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>3 TikTok video scripts</strong> — The Manifesto, The Callout, The Origin</div></div>
+        <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>3 Gamma video presentations</strong> — generated in Alien theme, in your Gamma account now</div></div>
+        <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Marketing angle locked:</strong> "Truth or Dare has been reborn in the meta"</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Deploy landing page</strong> to Vercel → put URL in TikTok bio</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Export Gamma videos</strong> as PPTX → open in Google Slides → screen record → post to TikTok</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Lock remaining social handles</strong> — Instagram, X, YouTube @illprovit or @illprovitapp</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: WHAT NEEDS TO BE BUILT -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-header-left">
+        <div class="section-dot dot-red"></div>
+        <div class="section-title">What Still Needs To Be Built</div>
+      </div>
+      <span class="section-badge badge-todo">↻ In Progress</span>
+    </div>
+    <div class="section-body">
+      <div class="checklist">
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Auth screens</strong> — Google + Apple login via Supabase Auth</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Home screen</strong> — active circles feed + public circles explore</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Create Circle flow</strong> — name, challenge, buy-in, dates, public/private, invite code</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Join Circle flow</strong> — via link or 6-digit invite code + payment</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Circle screen</strong> — real-time leaderboard, proof feed, submit button, power moves</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Submit Proof screen</strong> — live camera only, timestamp + name watermark burned in</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Leaderboard component</strong> — real-time rankings, strike counts, scores, shields/bombs visible</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Power Moves store</strong> — coin balance, all 7 moves, buy coins flow</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Wallet screen</strong> — ProvCoins balance, transaction history, add payment method</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Profile screen</strong> — stats, badges, circle history, total won</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Notifications screen</strong> — strike alerts, bomb alerts, winner announcements</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Winner payout screen</strong> — shareable graphic with amount won, #BetThat branding</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Push notifications</strong> — Supabase Realtime + Web Push API</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Strike Bomb 2hr countdown</strong> — cron job to auto-resolve bombs on deadline</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Daily proof reminder</strong> — automated notification before proof deadline</div></div>
+        <div class="check-item"><div class="check-icon todo">✗</div><div class="check-text"><strong>Admin dashboard</strong> — manage circles, invalidate proofs, handle disputes</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 8: TECH STACK -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-header-left">
+        <div class="section-dot dot-blue"></div>
+        <div class="section-title">Tech Stack</div>
+      </div>
+      <span class="section-badge badge-info">Reference</span>
+    </div>
+    <div class="section-body">
+      <div class="two-col">
+        <div class="checklist">
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Frontend:</strong> Next.js + Tailwind CSS</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Backend:</strong> Supabase (Postgres + Auth + Storage + Realtime)</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Payments:</strong> Stripe Connect (escrow + payouts + coins)</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Hosting:</strong> Vercel (serverless functions + edge)</div></div>
+        </div>
+        <div class="checklist">
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Camera:</strong> WebRTC / device camera API</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Ads:</strong> Google AdMob (free tier)</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Notifications:</strong> Supabase Realtime + Web Push API</div></div>
+          <div class="check-item"><div class="check-icon done">✓</div><div class="check-text"><strong>Storage:</strong> Supabase Storage (proof photos, avatars)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 9: CLAUDE CODE PROMPT -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-header-left">
+        <div class="section-dot dot-yellow"></div>
+        <div class="section-title">Claude Code Master Prompt</div>
+      </div>
+      <span class="section-badge badge-info">Copy This</span>
+    </div>
+    <div class="section-body">
+      <div class="code-box" id="claudePrompt">
+<span class="c-green"># illProvIt — Full App Build Prompt for Claude Code</span>
+
+<span class="c-white">## WHAT WE ARE BUILDING</span>
+illProvIt is a skill-based competitive accountability app.
+Truth or Dare has been reborn in the meta.
+Users create Circles with their friend group, put real money
+in a pot, submit photo proof of completed tasks daily,
+and the winner takes the pot.
+
+<span class="c-white">## BRAND</span>
+- App name: illProvIt
+- Handle: @illprovit
+- Tagline: Stop Talking. #ProvIt.
+- Statement: "Truth or Dare has been reborn in the meta.
+  You no longer have to be in the same place.
+  Challenge your circle from anywhere.
+  And they can always #ProvIt. ........#BetThat!"
+- Colors: #00FF88 (green), #00CFFF (blue),
+  #FF003C (red), #000000 (black)
+- Fonts: Black Ops One (headers), Oswald (body)
+
+<span class="c-white">## TECH STACK</span>
+- Frontend: Next.js 14 + Tailwind CSS
+- Backend: Supabase (Postgres, Auth, Storage, Realtime)
+- Payments: Stripe Connect
+- Hosting: Vercel
+- Camera: WebRTC / device camera API
+- Ads: Google AdMob (free tier)
+- Notifications: Supabase Realtime + Web Push API
+
+<span class="c-white">## FEE STRUCTURE (CRITICAL — BUILD THIS EXACTLY)</span>
+- Admin fee: $1.99 per member on join → straight to illProvIt
+- #BetThat fee: 10% of pot at payout → illProvIt
+- Stripe fees: ~2.9% + $0.30 → deducted from pot
+- Winner receives: pot minus Stripe fees minus 10%
+- Admin fee kept even if circle cancelled
+- Example: 10 people × $10 buy-in:
+  Each pays $11.99 ($10 buy-in + $1.99 admin)
+  Pot: $100.00
+  Stripe: -$3.20
+  Platform: -$10.00
+  Winner gets: $86.80
+  illProvIt makes: $29.90 ($19.90 + $10.00)
+
+<span class="c-white">## DATABASE (ALREADY BUILT — USE THIS SCHEMA)</span>
+Tables: users, circles, circle_members, proofs, betthats,
+strikes, transactions, notifications, badges, user_badges,
+coin_packs, coin_transactions, power_moves, active_power_moves,
+personal_challenges, strike_bombs, sponsors, sponsored_circles
+
+Key functions already written in SQL:
+- issue_strike(circle_id, user_id)
+- calculate_payout(circle_id)
+- add_coins(user_id, coins, type, note)
+- spend_coins(user_id, coins, type, circle_id, target_user_id)
+- use_strike_back(user_id, circle_id)
+- use_strike_shield(user_id, circle_id)
+- use_strike_bomb(user_id, circle_id, target_user_id)
+- use_personal_challenge(user_id, circle_id, target_id, text)
+
+<span class="c-white">## GAME MECHANICS</span>
+- Users create or join Circles
+- Each Circle has a challenge, buy-in amount, start/end date
+- Members submit photo proof daily (live camera only)
+- Missed submission = strike
+- 3 strikes = eliminated (money stays in pot)
+- Winner = highest score on leaderboard when challenge ends
+- Winner paid out automatically via Stripe
+
+<span class="c-white">## PROVCOINS — IN-APP ECONOMY</span>
+Coin Packs:
+- Starter: 100 coins — $0.99
+- Hustle: 300 coins — $2.49
+- Grinder: 750 coins (700 + 50 bonus) — $4.99 BEST VALUE
+- Beast: 1,650 coins (1500 + 150 bonus) — $9.99
+- Legend: 4,500 coins (4000 + 500 bonus) — $24.99
+
+Power Moves:
+- Strike Back: 200 coins — remove 1 strike, once per challenge
+- Personal Challenge: 150 coins — challenge one member, 24hr deadline
+- Strike Shield: 300 coins — block next strike or bomb
+- Spy Mode: 100 coins — see when someone last submitted proof
+- Double Points: 250 coins — 2x proof points for 24hrs
+- Strike Bomb: 500 coins — target has 2hrs to prove it or take strike
+- Crown Flex: 50 coins — cosmetic crown on proof post
+
+<span class="c-white">## SCREENS TO BUILD</span>
+1. Landing page (already built as HTML — replicate in Next.js)
+2. Auth — Google + Apple login via Supabase Auth
+3. Onboarding — username, avatar, DOB (18+ check), connect bank
+4. Home — active circles feed + explore public circles
+5. Create Circle — name, challenge, buy-in, dates, public/private
+6. Join Circle — via link or 6-digit invite code + Stripe payment
+7. Circle — real-time leaderboard, proof feed, submit button
+8. Submit Proof — live camera, timestamp + name watermark burned in
+9. Power Moves store — coin balance, all 7 moves, purchase flow
+10. Wallet — ProvCoins balance, transaction history, payment methods
+11. Profile — stats, badges, circle history, total won
+12. Notifications — strikes, bombs, winner announcements
+13. Winner screen — shareable payout graphic with #BetThat branding
+14. Settings — subscription, account, payout details
+
+<span class="c-white">## STRIPE INTEGRATION (ALREADY BUILT)</span>
+Functions written in /api/stripe/index.js:
+- createCustomer()
+- createConnectedAccount()
+- getOnboardingLink()
+- chargeCircleMember()
+- createSetupIntent()
+- listPaymentMethods()
+- payoutWinner()
+- refundCancelledCircle()
+- handleWebhook()
+- calculatePotSummary()
+
+ProvCoins Stripe in /api/coins/index.js:
+- createCoinPurchase()
+- getCoinBalance()
+- getCoinPacks()
+- executePowerMove()
+- getPowerMoves()
+- getActiveThreats()
+- resolveStrikeBomb()
+- getCoinHistory()
+
+<span class="c-white">## ENVIRONMENT VARIABLES NEEDED</span>
+STRIPE_SECRET_KEY=sk_live_xxx
+STRIPE_PUBLISHABLE_KEY=pk_live_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_ANON_KEY=eyxxx
+SUPABASE_SERVICE_ROLE_KEY=eyxxx
+APP_URL=https://illprovit.vercel.app
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_xxx
+
+<span class="c-white">## DESIGN REQUIREMENTS</span>
+- Dark aesthetic throughout — black backgrounds
+- Neon green (#00FF88) as primary accent
+- RGB glitch effects on key moments
+- Scanline overlay on dark sections
+- Floating particle effects on main screens
+- Aggressive typography — Black Ops One for headings
+- High contrast — nothing soft or pastel
+- Mobile-first — optimized for phone screens
+- Every shared graphic must show @illprovit handle
+
+<span class="c-white">## KEY RULES</span>
+1. Live camera only for proof — no photo library access
+2. Timestamp + username watermarked on every proof photo
+3. Admin fee kept on cancellation — never refunded
+4. Strike Bomb cannot be used in last 24hrs of challenge
+5. Strike Shield blocks bomb before it lands
+6. One Strike Back per challenge per user
+7. 18+ age verification on signup
+8. All money flows through Stripe — never stored in app
+9. Real-time leaderboard updates via Supabase Realtime
+10. Push notification for every strike, bomb, and winner
+
+<span class="c-white">## START HERE</span>
+Build Phase 1 first:
+1. Next.js project setup with Tailwind
+2. Supabase connection and auth
+3. Deploy schema SQL to Supabase
+4. Auth screens (Google + Apple login)
+5. Home screen with circle feed
+6. Create Circle flow with Stripe payment
+7. Submit Proof with live camera + watermark
+8. Real-time leaderboard
+
+<span class="c-green">## BRAND REMINDER</span>
+Every screen should feel like it belongs in the same world
+as the logo — dark, aggressive, neon green, RGB glitch energy.
+This is not a wellness app. This is a competitive arena.
+Truth or Dare has been reborn. ........#BetThat!
+      <button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function copyPrompt(btn) {
+  const box = document.getElementById('claudePrompt');
+  const text = box.innerText.replace('Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    btn.innerText = '✓ Copied!';
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerText = 'Copy';
+      toast.classList.remove('show');
+    }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>
