@@ -41,7 +41,7 @@ export default function CircleActions({
     setLoading(true)
     setResult(null)
 
-    const fnMap: Record<string, () => Promise<any>> = {
+    const fnMap: Record<string, () => PromiseLike<any>> = {
       strike_shield: () => supabase.rpc('use_strike_shield', { p_user_id: userId, p_circle_id: circleId }),
       strike_back:   () => supabase.rpc('use_strike_back',   { p_user_id: userId, p_circle_id: circleId }),
       double_points: () => supabase.rpc('spend_coins', { p_user_id: userId, p_amount: 250, p_type: 'power_move', p_description: 'Double Points', p_circle_id: circleId }),
