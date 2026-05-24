@@ -55,9 +55,9 @@ export async function POST(request: NextRequest) {
 
     case 'checkout.session.completed': {
       const session = event.data.object as any
-      if (session.metadata?.type === 'coin_purchase') {
-        const { pack_id, user_id } = session.metadata
+      const { type, pack_id, user_id, circle_id, buy_in_cents, admin_fee_cents } = session.metadata ?? {}
 
+      if (type === 'coin_purchase') {
         const { data: pack } = await supabase
           .from('coin_packs')
           .select('coins, bonus_coins')
@@ -71,6 +71,65 @@ export async function POST(request: NextRequest) {
             p_amount: totalCoins,
             p_type: 'coin_purchase',
             p_description: `Purchased ${totalCoins} coins`,
+          })
+        }
+      }
+
+      if (type === 'circle_join' && circle_id && user_id) {
+        const pi = session.payment_intent
+
+        // Mark member as paid
+        await supabase
+          .from('circle_members')
+          .update({ stripe_payment_intent_id: pi, paid_at: new Date().toISOString() })
+          .eq('circle_id', circle_id)
+          .eq('user_id', user_id)
+
+        // Record transactions
+        await Promise.all([
+          supabase.from('transactions').insert({
+            circle_id,
+            user_id,
+            type: 'buy_in',
+            amount: parseInt(buy_in_cents) / 100,
+            stripe_payment_id: pi,
+          }),
+          supabase.from('transactions').insert({
+            circle_id,
+            user_id,
+            type: 'admin_fee',
+            amount: parseInt(admin_fee_cents) / 100,
+            stripe_payment_id: pi,
+            description: 'illProvIt admin fee',
+          }),
+          // Update circle pot total
+          supabase.rpc('add_coins', {
+            p_user_id: user_id,
+            p_amount: 0,
+            p_type: 'joined_circle',
+          }),
+        ])
+
+        // Notify circle creator
+        const { data: circle } = await supabase
+          .from('circles')
+          .select('creator_id, name')
+          .eq('id', circle_id)
+          .single()
+
+        if (circle) {
+          const { data: joiner } = await supabase
+            .from('users')
+            .select('username')
+            .eq('id', user_id)
+            .single()
+
+          await supabase.from('notifications').insert({
+            user_id: circle.creator_id,
+            type: 'new_member',
+            title: 'New Member',
+            body: `@${joiner?.username ?? 'Someone'} just joined ${circle.name}`,
+            circle_id,
           })
         }
       }

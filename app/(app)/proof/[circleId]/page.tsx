@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ProofCamera from '@/components/camera/ProofCamera'
@@ -11,6 +11,18 @@ export default function SubmitProofPage({ params }: { params: { circleId: string
 
   const [phase, setPhase] = useState<'camera' | 'uploading' | 'done'>('camera')
   const [error, setError] = useState<string | null>(null)
+  const [username, setUsername] = useState('user')
+  const [pointsAwarded, setPointsAwarded] = useState(10)
+
+  useEffect(() => {
+    async function loadUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase.from('users').select('username').eq('id', user.id).single()
+      if (data) setUsername(data.username)
+    }
+    loadUser()
+  }, [])
 
   async function handleCapture(blob: Blob, watermarkText: string) {
     setPhase('uploading')
@@ -32,12 +44,34 @@ export default function SubmitProofPage({ params }: { params: { circleId: string
 
     const { data: { publicUrl } } = supabase.storage.from('proofs').getPublicUrl(fileName)
 
+    // Check if double points is active
+    const { data: member } = await supabase
+      .from('circle_members')
+      .select('score')
+      .eq('circle_id', params.circleId)
+      .eq('user_id', user.id)
+      .single()
+
+    const { data: doublePoints } = await supabase
+      .from('active_power_moves')
+      .select('id')
+      .eq('circle_id', params.circleId)
+      .eq('user_id', user.id)
+      .eq('move_key', 'double_points')
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle()
+
+    const pts = doublePoints ? 20 : 10
+    setPointsAwarded(pts)
+
     const { error: dbError } = await supabase.from('proofs').insert({
       circle_id: params.circleId,
       user_id: user.id,
       image_url: publicUrl,
       watermark_text: watermarkText,
       status: 'pending',
+      points_awarded: pts,
+      has_double_points: !!doublePoints,
     })
 
     if (dbError) {
@@ -46,9 +80,10 @@ export default function SubmitProofPage({ params }: { params: { circleId: string
       return
     }
 
-    // Award points to member
-    await supabase.from('circle_members')
-      .update({ score: supabase.rpc('score', {}) })
+    // Increment score
+    await supabase
+      .from('circle_members')
+      .update({ score: (member?.score ?? 0) + pts })
       .eq('circle_id', params.circleId)
       .eq('user_id', user.id)
 
@@ -59,7 +94,7 @@ export default function SubmitProofPage({ params }: { params: { circleId: string
     return (
       <div className="fixed inset-0 bg-black z-50">
         <ProofCamera
-          username="you"
+          username={username}
           onCapture={handleCapture}
           onCancel={() => router.back()}
         />
@@ -89,7 +124,9 @@ export default function SubmitProofPage({ params }: { params: { circleId: string
       </div>
       <div className="text-center">
         <div className="font-ops text-3xl text-white mb-2">Proof Submitted</div>
-        <div className="font-mono text-[10px] text-[#00FF88] tracking-widest uppercase">+10 PTS · #ProvIt</div>
+        <div className="font-mono text-[10px] text-[#00FF88] tracking-widest uppercase">
+          +{pointsAwarded} PTS{pointsAwarded === 20 ? ' · 2X ACTIVE 🔥' : ''} · #ProvIt
+        </div>
       </div>
       <div className="font-oswald text-sm text-[#333] text-center max-w-xs">
         Your circle can now see your proof. Let them try to call #Bullshit.

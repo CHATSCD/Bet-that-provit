@@ -58,10 +58,15 @@ export default async function HomePage() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-ops text-sm tracking-widest uppercase text-[#333]">My Circles</h2>
+            <div className="flex items-center gap-3">
+            <Link href="/circle/join" className="font-mono text-[10px] text-[#555] tracking-widest uppercase hover:text-[#333] transition-colors">
+              Enter Code
+            </Link>
             <Link href="/circle/create" className="flex items-center gap-1 font-mono text-[10px] text-[#00FF88] tracking-widest uppercase">
               <Plus size={10} />
               Create
             </Link>
+          </div>
           </div>
 
           {activeCircles.length === 0 ? (

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Camera, Zap, Copy } from 'lucide-react'
-import Leaderboard from '@/components/circle/Leaderboard'
+import RealtimeLeaderboard from '@/components/circle/RealtimeLeaderboard'
 import ProofCard from '@/components/circle/ProofCard'
 import CircleActions from './CircleActions'
 
@@ -131,7 +131,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
         {/* Leaderboard */}
         <section>
           <h2 className="font-ops text-xs tracking-widest uppercase text-[#333] mb-3">Leaderboard</h2>
-          <Leaderboard members={leaderboard ?? []} currentUserId={user.id} />
+          <RealtimeLeaderboard circleId={params.id} initialMembers={leaderboard ?? []} currentUserId={user.id} />
         </section>
 
         {/* Power Moves */}

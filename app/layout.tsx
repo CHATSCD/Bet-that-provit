@@ -36,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Oswald:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
           rel="stylesheet"
         />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="bg-black text-white antialiased">
         {children}

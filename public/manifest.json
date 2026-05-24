@@ -1,0 +1,41 @@
+{
+  "name": "illProvIt",
+  "short_name": "illProvIt",
+  "description": "Stop Talking. #ProvIt. Competitive accountability with real money on the line.",
+  "start_url": "/home",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "social", "finance"],
+  "shortcuts": [
+    {
+      "name": "Create Circle",
+      "short_name": "Create",
+      "description": "Start a new circle",
+      "url": "/circle/create",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Join Circle",
+      "short_name": "Join",
+      "description": "Enter an invite code",
+      "url": "/circle/join",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
