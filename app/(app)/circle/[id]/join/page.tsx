@@ -12,7 +12,7 @@ export default async function JoinCirclePage({ params }: { params: { id: string 
   const [{ data: circle }, { data: membership }, { data: profile }] = await Promise.all([
     supabase.from('circles').select('*').eq('id', params.id).single(),
     supabase.from('circle_members').select('id').eq('circle_id', params.id).eq('user_id', user.id).maybeSingle(),
-    supabase.from('users').select('stripe_customer_id, username').eq('id', user.id).single(),
+    supabase.from('users').select('stripe_customer_id, username, is_admin').eq('id', user.id).single(),
   ])
 
   if (!circle) notFound()
@@ -139,6 +139,7 @@ export default async function JoinCirclePage({ params }: { params: { id: string 
           circleName={circle.name}
           totalChargeCents={totalCharge}
           hasStripeCustomer={!!profile?.stripe_customer_id}
+          isAdmin={!!profile?.is_admin}
         />
       </div>
     </div>

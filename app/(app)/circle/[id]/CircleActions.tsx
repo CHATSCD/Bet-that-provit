@@ -41,14 +41,16 @@ export default function CircleActions({
     setLoading(true)
     setResult(null)
 
-    const fnMap: Record<string, () => Promise<any>> = {
-      strike_shield: () => supabase.rpc('use_strike_shield', { p_user_id: userId, p_circle_id: circleId }),
-      strike_back:   () => supabase.rpc('use_strike_back',   { p_user_id: userId, p_circle_id: circleId }),
-      double_points: () => supabase.rpc('spend_coins', { p_user_id: userId, p_amount: 250, p_type: 'power_move', p_description: 'Double Points', p_circle_id: circleId }),
-      crown_flex:    () => supabase.rpc('spend_coins', { p_user_id: userId, p_amount: 50,  p_type: 'power_move', p_description: 'Crown Flex',    p_circle_id: circleId }),
-      spy_mode:      () => supabase.rpc('spend_coins', { p_user_id: userId, p_amount: 100, p_type: 'power_move', p_description: 'Spy Mode',      p_circle_id: circleId }),
-      strike_bomb:   () => supabase.rpc('use_strike_bomb', { p_user_id: userId, p_circle_id: circleId, p_target_id: selectedTarget }),
-      personal_challenge: () => supabase.rpc('use_personal_challenge', { p_user_id: userId, p_circle_id: circleId, p_target_id: selectedTarget, p_challenge_text: challengeText }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rpc = (fn: string, args: Record<string, unknown>) => (supabase.rpc as any)(fn, args)
+    const fnMap: Record<string, () => PromiseLike<any>> = {
+      strike_shield: () => rpc('use_strike_shield', { p_user_id: userId, p_circle_id: circleId }),
+      strike_back:   () => rpc('use_strike_back',   { p_user_id: userId, p_circle_id: circleId }),
+      double_points: () => rpc('spend_coins', { p_user_id: userId, p_amount: 250, p_type: 'power_move', p_description: 'Double Points', p_circle_id: circleId }),
+      crown_flex:    () => rpc('spend_coins', { p_user_id: userId, p_amount: 50,  p_type: 'power_move', p_description: 'Crown Flex',    p_circle_id: circleId }),
+      spy_mode:      () => rpc('spend_coins', { p_user_id: userId, p_amount: 100, p_type: 'power_move', p_description: 'Spy Mode',      p_circle_id: circleId }),
+      strike_bomb:   () => rpc('use_strike_bomb', { p_user_id: userId, p_circle_id: circleId, p_target_id: selectedTarget }),
+      personal_challenge: () => rpc('use_personal_challenge', { p_user_id: userId, p_circle_id: circleId, p_target_id: selectedTarget, p_challenge_text: challengeText }),
     }
 
     const fn = fnMap[selectedMove]

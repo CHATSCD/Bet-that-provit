@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Camera, Zap, Copy } from 'lucide-react'
+import { ChevronLeft, Camera, Zap } from 'lucide-react'
 import RealtimeLeaderboard from '@/components/circle/RealtimeLeaderboard'
 import ProofCard from '@/components/circle/ProofCard'
 import CircleActions from './CircleActions'
+import CopyButton from '@/components/circle/CopyButton'
 
 export default async function CirclePage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -149,13 +150,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
                 <div className="flex-1 bg-[#0a0a0a] border border-[#1a1a1a] px-4 py-2.5 flex items-center">
                   <span className="font-ops text-xl text-[#00FF88] tracking-widest">{circle.invite_code}</span>
                 </div>
-                <button
-                  onClick={() => {}}
-                  className="px-4 py-2.5 border border-[#1a1a1a] hover:border-[#00FF88] transition-colors"
-                  title="Copy callout message"
-                >
-                  <Copy size={16} className="text-[#333]" />
-                </button>
+                <CopyButton text={calloutText} />
               </div>
             </div>
           </section>

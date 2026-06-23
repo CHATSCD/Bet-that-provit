@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'illProvIt — Stop Talking. #ProvIt.',
   description: 'Truth or Dare has been reborn in the meta. Challenge your circle. Put real money in the pot. #BetThat.',
