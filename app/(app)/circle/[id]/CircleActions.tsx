@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 import { Shield, Bomb, Zap, Eye, Search, Sparkles, Flame, Target, Crown, Dice5 } from 'lucide-react'
 
 type Member = { user_id: string; username: string; status: string }
@@ -21,12 +22,15 @@ export default function CircleActions({
   circleId,
   userId,
   members,
+  ownedByKey,
 }: {
   circleId: string
   userId: string
   members: Member[]
   membership: any
+  ownedByKey: Record<string, number>
 }) {
+  const [owned, setOwned] = useState(ownedByKey)
   const [selectedMove, setSelectedMove] = useState<string | null>(null)
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null)
   const [challengeText, setChallengeText] = useState('')
@@ -60,6 +64,9 @@ export default function CircleActions({
     if (data?.success && selectedMove === 'spy_reveal') {
       message = data.targetBalance != null ? `Balance: ${data.targetBalance} ${data.targetCurrency?.toUpperCase()}` : 'No data.'
     }
+    if (data?.success) {
+      setOwned(o => ({ ...o, [selectedMove]: data.remainingQuantity }))
+    }
 
     setResult({ success: !!data?.success, message })
     setLoading(false)
@@ -70,24 +77,32 @@ export default function CircleActions({
 
   return (
     <section>
-      <h2 className="font-ops text-xs tracking-widest uppercase text-[#333] mb-3">Power Moves</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-ops text-xs tracking-widest uppercase text-[#333]">Power Moves</h2>
+        <Link href="/store" className="font-mono text-[9px] text-[#00FF88] tracking-widest uppercase">Buy Kits →</Link>
+      </div>
 
       <div className="grid grid-cols-4 gap-1.5 mb-3">
-        {MOVES.map(({ key, icon: Icon, label, color }) => (
-          <button
-            key={key}
-            onClick={() => setSelectedMove(selectedMove === key ? null : key)}
-            className={[
-              'flex flex-col items-center gap-1 p-2.5 border transition-all active:scale-90',
-              selectedMove === key
-                ? 'bg-[rgba(0,255,136,0.05)] border-[#00FF88]'
-                : 'bg-[#060606] border-[#0f0f0f] hover:border-[#1a1a1a]',
-            ].join(' ')}
-          >
-            <Icon size={16} style={{ color }} />
-            <span className="font-ops text-[9px] text-white tracking-widest text-center leading-tight">{label}</span>
-          </button>
-        ))}
+        {MOVES.map(({ key, icon: Icon, label, color }) => {
+          const qty = owned[key] ?? 0
+          return (
+            <button
+              key={key}
+              onClick={() => setSelectedMove(selectedMove === key ? null : key)}
+              disabled={qty <= 0}
+              className={[
+                'relative flex flex-col items-center gap-1 p-2.5 border transition-all active:scale-90 disabled:opacity-30',
+                selectedMove === key
+                  ? 'bg-[rgba(0,255,136,0.05)] border-[#00FF88]'
+                  : 'bg-[#060606] border-[#0f0f0f] hover:border-[#1a1a1a]',
+              ].join(' ')}
+            >
+              <span className="absolute top-1 right-1 font-mono text-[8px] text-[#555]">{qty}</span>
+              <Icon size={16} style={{ color }} />
+              <span className="font-ops text-[9px] text-white tracking-widest text-center leading-tight">{label}</span>
+            </button>
+          )
+        })}
       </div>
 
       {/* Move detail panel */}
@@ -98,6 +113,7 @@ export default function CircleActions({
               <div className="font-ops text-sm text-white">{move.label}</div>
               <div className="font-oswald text-xs text-[#444]">{move.desc}</div>
             </div>
+            <div className="font-mono text-[9px] text-[#333] uppercase tracking-widest">{owned[move.key] ?? 0} owned</div>
           </div>
 
           {/* Target selector */}
@@ -149,7 +165,7 @@ export default function CircleActions({
             disabled={loading || (!!move.requiresTarget && !selectedTarget) || (selectedMove === 'personal_challenge' && !challengeText)}
             className="w-full py-3 font-ops text-sm tracking-widest uppercase text-black bg-[#00FF88] disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
           >
-            {loading ? 'Executing...' : 'Activate'}
+            {loading ? 'Executing...' : 'Activate · Free'}
           </button>
         </div>
       )}

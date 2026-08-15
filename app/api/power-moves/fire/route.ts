@@ -29,13 +29,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'This move needs a circle' }, { status: 400 })
   }
 
-  const { data: profile } = await service
-    .from('profiles')
-    .select('provcoins_balance')
-    .eq('id', user.id)
-    .single()
-  if (!profile || profile.provcoins_balance < move.coin_cost) {
-    return NextResponse.json({ error: 'Not enough ProvCoins' }, { status: 400 })
+  // Firing is free — the ProvCoins cost is paid up front when the kit is bought.
+  // It just consumes one unit from inventory.
+  const { data: inventory } = await service
+    .from('user_power_moves')
+    .select('id, quantity')
+    .eq('user_id', user.id)
+    .eq('power_move_id', move.id)
+    .maybeSingle()
+  if (!inventory || inventory.quantity <= 0) {
+    return NextResponse.json({ error: `You don't own any ${move.name}. Buy a kit first.` }, { status: 400 })
   }
 
   // Move-specific eligibility checks BEFORE charging
@@ -74,26 +77,22 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Charge ProvCoins — atomic, SECURITY DEFINER, logs to coin_transactions.
-  const { error: chargeErr } = await service.rpc('update_coin_balance', {
-    p_user_id: user.id,
-    p_currency: 'provcoins',
-    p_amount: -move.coin_cost,
-    p_type: 'power_move_use',
-    p_reference_id: circleId ?? null,
-    p_description: move.name,
-  })
-  if (chargeErr) return NextResponse.json({ error: chargeErr.message }, { status: 400 })
+  // Consume one unit of inventory — already paid for at kit-purchase time.
+  const { error: consumeErr } = await service
+    .from('user_power_moves')
+    .update({ quantity: inventory.quantity - 1 })
+    .eq('id', inventory.id)
+  if (consumeErr) return NextResponse.json({ error: consumeErr.message }, { status: 400 })
 
   await service.from('power_move_usage').insert({
     user_id: user.id,
     power_move_id: move.id,
     circle_id: circleId ?? null,
     target_user_id: targetUserId ?? null,
-    cost_paid: move.coin_cost,
+    cost_paid: 0,
   })
 
-  const result: Record<string, unknown> = { success: true, name: move.name }
+  const result: Record<string, unknown> = { success: true, name: move.name, remainingQuantity: inventory.quantity - 1 }
 
   switch (moveKey) {
     case 'strike_shield': {

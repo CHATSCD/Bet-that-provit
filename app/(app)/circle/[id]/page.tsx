@@ -37,12 +37,18 @@ export default async function CirclePage({ params }: { params: { id: string } })
   const activeMemberCount = leaderboard?.filter(m => m.status === 'active').length ?? 0
 
   const myMember = leaderboard?.find(m => m.user_id === user.id)
-  const { data: activeBombs } = await supabase
-    .from('strike_bombs')
-    .select('*')
-    .eq('circle_id', params.id)
-    .eq('target_id', user.id)
-    .eq('status', 'active')
+  const [{ data: activeBombs }, { data: powerMoves }, { data: inventory }] = await Promise.all([
+    supabase.from('strike_bombs')
+      .select('*')
+      .eq('circle_id', params.id)
+      .eq('target_id', user.id)
+      .eq('status', 'active'),
+    supabase.from('power_moves').select('id, key').eq('is_active', true),
+    supabase.from('user_power_moves').select('power_move_id, quantity').eq('user_id', user.id),
+  ])
+  const ownedByKey = Object.fromEntries(
+    (powerMoves ?? []).map(m => [m.key, inventory?.find(i => i.power_move_id === m.id)?.quantity ?? 0])
+  )
 
   const calloutText = `${myMember?.username ?? 'Someone'} just wagered $${circle.buy_in_amount} on a "${circle.name}" arena and called you out. You have until ${startDate.toLocaleDateString()} to match the buy-in or openly admit you're soft. Lock in at illprovit.app using access code: ${circle.invite_code} #BetThat`
 
@@ -144,7 +150,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
         </section>
 
         {/* Power Moves */}
-        {isMember && <CircleActions circleId={params.id} userId={user.id} members={leaderboard ?? []} membership={membership} />}
+        {isMember && <CircleActions circleId={params.id} userId={user.id} members={leaderboard ?? []} membership={membership} ownedByKey={ownedByKey} />}
 
         {/* Invite */}
         {isMember && (
