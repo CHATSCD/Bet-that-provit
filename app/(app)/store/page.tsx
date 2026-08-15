@@ -8,8 +8,8 @@ export default async function StorePage() {
   if (!user) redirect('/auth/login')
 
   const [{ data: profile }, { data: powerMoves }, { data: myCircles }] = await Promise.all([
-    supabase.from('users').select('coin_balance').eq('id', user.id).single(),
-    supabase.from('power_moves').select('*').order('coin_cost'),
+    supabase.from('profiles').select('provcoins_balance').eq('id', user.id).single(),
+    supabase.from('power_moves').select('*').eq('is_active', true).order('coin_cost'),
     supabase.from('circle_members')
       .select('circle_id, circles(id, name, status)')
       .eq('user_id', user.id)
@@ -23,7 +23,7 @@ export default async function StorePage() {
   return (
     <StoreFront
       userId={user.id}
-      coinBalance={profile?.coin_balance ?? 0}
+      provcoinsBalance={profile?.provcoins_balance ?? 0}
       powerMoves={powerMoves ?? []}
       activeCircles={activeCircles}
     />

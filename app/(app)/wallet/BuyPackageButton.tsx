@@ -1,15 +1,15 @@
 'use client'
 import { useState } from 'react'
 
-export default function BuyCoinButton({ packId, price, label }: { packId: string; price: number; label: string }) {
+export default function BuyPackageButton({ packageId, label }: { packageId: string; label: string }) {
   const [loading, setLoading] = useState(false)
 
   async function handleBuy() {
     setLoading(true)
-    const res = await fetch('/api/coins', {
+    const res = await fetch('/api/stripe/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ packId }),
+      body: JSON.stringify({ packageId }),
     })
     const data = await res.json()
     if (data.url) window.location.href = data.url

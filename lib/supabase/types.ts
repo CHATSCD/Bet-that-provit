@@ -88,6 +88,68 @@ export type Database = {
         }
         Relationships: []
       }
+      bindery_books: {
+        Row: {
+          author: string | null
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bindery_chapters: {
+        Row: {
+          book_id: string
+          content: string
+          created_at: string
+          id: string
+          position: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          book_id: string
+          content?: string
+          created_at?: string
+          id?: string
+          position?: number
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          book_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          position?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bindery_chapters_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "bindery_books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       circle_members: {
         Row: {
           circle_id: string
@@ -162,6 +224,7 @@ export type Database = {
           challenge: string
           created_at: string
           creator_id: string
+          currency: string
           end_date: string
           id: string
           invite_code: string
@@ -182,6 +245,7 @@ export type Database = {
           challenge: string
           created_at?: string
           creator_id: string
+          currency?: string
           end_date: string
           id?: string
           invite_code?: string
@@ -202,6 +266,7 @@ export type Database = {
           challenge?: string
           created_at?: string
           creator_id?: string
+          currency?: string
           end_date?: string
           id?: string
           invite_code?: string
@@ -263,28 +328,37 @@ export type Database = {
       coin_transactions: {
         Row: {
           amount: number
+          balance_after: number | null
           circle_id: string | null
           created_at: string
+          currency: string | null
           description: string | null
           id: string
+          reference_id: string | null
           type: string
           user_id: string
         }
         Insert: {
           amount: number
+          balance_after?: number | null
           circle_id?: string | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           id?: string
+          reference_id?: string | null
           type: string
           user_id: string
         }
         Update: {
           amount?: number
+          balance_after?: number | null
           circle_id?: string | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           id?: string
+          reference_id?: string | null
           type?: string
           user_id?: string
         }
@@ -308,6 +382,498 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gps_tracker_locations: {
+        Row: {
+          accuracy: number | null
+          device_id: string
+          id: number
+          lat: number
+          lng: number
+          recorded_at: string
+        }
+        Insert: {
+          accuracy?: number | null
+          device_id: string
+          id?: never
+          lat: number
+          lng: number
+          recorded_at?: string
+        }
+        Update: {
+          accuracy?: number | null
+          device_id?: string
+          id?: never
+          lat?: number
+          lng?: number
+          recorded_at?: string
+        }
+        Relationships: []
+      }
+      kyc_events: {
+        Row: {
+          created_at: string
+          id: string
+          new_status: string
+          notes: string | null
+          old_status: string | null
+          provider: string | null
+          reference_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_status: string
+          notes?: string | null
+          old_status?: string | null
+          provider?: string | null
+          reference_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_status?: string
+          notes?: string | null
+          old_status?: string | null
+          provider?: string | null
+          reference_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leadfinder_leads: {
+        Row: {
+          business_name: string
+          category: string | null
+          city: string | null
+          contact_email: string | null
+          draft_body: string | null
+          draft_subject: string | null
+          drafted_at: string | null
+          formatted_address: string | null
+          found_at: string | null
+          google_maps_url: string | null
+          id: string
+          phone: string | null
+          place_id: string
+          rating: number | null
+          sent_at: string | null
+          state: string | null
+          status: string
+          user_ratings_total: number | null
+        }
+        Insert: {
+          business_name: string
+          category?: string | null
+          city?: string | null
+          contact_email?: string | null
+          draft_body?: string | null
+          draft_subject?: string | null
+          drafted_at?: string | null
+          formatted_address?: string | null
+          found_at?: string | null
+          google_maps_url?: string | null
+          id?: string
+          phone?: string | null
+          place_id: string
+          rating?: number | null
+          sent_at?: string | null
+          state?: string | null
+          status?: string
+          user_ratings_total?: number | null
+        }
+        Update: {
+          business_name?: string
+          category?: string | null
+          city?: string | null
+          contact_email?: string | null
+          draft_body?: string | null
+          draft_subject?: string | null
+          drafted_at?: string | null
+          formatted_address?: string | null
+          found_at?: string | null
+          google_maps_url?: string | null
+          id?: string
+          phone?: string | null
+          place_id?: string
+          rating?: number | null
+          sent_at?: string | null
+          state?: string | null
+          status?: string
+          user_ratings_total?: number | null
+        }
+        Relationships: []
+      }
+      leadfinder_search_queue: {
+        Row: {
+          bbox_east: number | null
+          bbox_north: number | null
+          bbox_south: number | null
+          bbox_west: number | null
+          category: string
+          city: string
+          created_at: string | null
+          id: string
+          last_searched_at: string | null
+          state: string
+        }
+        Insert: {
+          bbox_east?: number | null
+          bbox_north?: number | null
+          bbox_south?: number | null
+          bbox_west?: number | null
+          category: string
+          city: string
+          created_at?: string | null
+          id?: string
+          last_searched_at?: string | null
+          state: string
+        }
+        Update: {
+          bbox_east?: number | null
+          bbox_north?: number | null
+          bbox_south?: number | null
+          bbox_west?: number | null
+          category?: string
+          city?: string
+          created_at?: string | null
+          id?: string
+          last_searched_at?: string | null
+          state?: string
+        }
+        Relationships: []
+      }
+      learndat_challenges: {
+        Row: {
+          challenger_id: string
+          circle_id: string | null
+          completed_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          opponent_id: string
+          platform_fee: number | null
+          question: string | null
+          stake_amount: number
+          status: string
+          total_pot: number | null
+          winner_id: string | null
+          winner_payout: number | null
+        }
+        Insert: {
+          challenger_id: string
+          circle_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency: string
+          id?: string
+          opponent_id: string
+          platform_fee?: number | null
+          question?: string | null
+          stake_amount: number
+          status?: string
+          total_pot?: number | null
+          winner_id?: string | null
+          winner_payout?: number | null
+        }
+        Update: {
+          challenger_id?: string
+          circle_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          opponent_id?: string
+          platform_fee?: number | null
+          question?: string | null
+          stake_amount?: number
+          status?: string
+          total_pot?: number | null
+          winner_id?: string | null
+          winner_payout?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learndat_challenges_challenger_id_fkey"
+            columns: ["challenger_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learndat_challenges_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circle_pot_summary"
+            referencedColumns: ["circle_id"]
+          },
+          {
+            foreignKeyName: "learndat_challenges_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learndat_challenges_opponent_id_fkey"
+            columns: ["opponent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learndat_challenges_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      med_logs: {
+        Row: {
+          confirmed_at: string | null
+          entered_day: string
+          entered_time: string
+          id: number
+          initials: string
+          medication_id: number
+          notes: string | null
+          patient_id: number
+          reminder_id: number | null
+        }
+        Insert: {
+          confirmed_at?: string | null
+          entered_day: string
+          entered_time: string
+          id?: number
+          initials: string
+          medication_id: number
+          notes?: string | null
+          patient_id: number
+          reminder_id?: number | null
+        }
+        Update: {
+          confirmed_at?: string | null
+          entered_day?: string
+          entered_time?: string
+          id?: number
+          initials?: string
+          medication_id?: number
+          notes?: string | null
+          patient_id?: number
+          reminder_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "med_logs_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "med_medications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "med_logs_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "med_patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "med_logs_reminder_id_fkey"
+            columns: ["reminder_id"]
+            isOneToOne: false
+            referencedRelation: "med_reminders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      med_medications: {
+        Row: {
+          created_at: string | null
+          dosage: string | null
+          id: number
+          instructions: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          dosage?: string | null
+          id?: number
+          instructions?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          dosage?: string | null
+          id?: number
+          instructions?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      med_patients: {
+        Row: {
+          created_at: string | null
+          id: number
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      med_push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string | null
+          endpoint: string
+          id: number
+          p256dh: string
+          patient_id: number
+        }
+        Insert: {
+          auth: string
+          created_at?: string | null
+          endpoint: string
+          id?: number
+          p256dh: string
+          patient_id: number
+        }
+        Update: {
+          auth?: string
+          created_at?: string | null
+          endpoint?: string
+          id?: number
+          p256dh?: string
+          patient_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "med_push_subscriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "med_patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      med_reminders: {
+        Row: {
+          created_at: string | null
+          id: number
+          medication_id: number
+          patient_id: number
+          schedule_id: number | null
+          scheduled_for: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          medication_id: number
+          patient_id: number
+          schedule_id?: number | null
+          scheduled_for: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          medication_id?: number
+          patient_id?: number
+          schedule_id?: number | null
+          scheduled_for?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "med_reminders_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "med_medications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "med_reminders_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "med_patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "med_reminders_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "med_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      med_schedules: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          days_of_week: Json | null
+          id: number
+          medication_id: number
+          patient_id: number
+          reminder_time: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          days_of_week?: Json | null
+          id?: number
+          medication_id: number
+          patient_id: number
+          reminder_time: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          days_of_week?: Json | null
+          id?: number
+          medication_id?: number
+          patient_id?: number
+          reminder_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "med_schedules_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "med_medications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "med_schedules_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "med_patients"
             referencedColumns: ["id"]
           },
         ]
@@ -429,30 +995,295 @@ export type Database = {
           },
         ]
       }
+      platform_revenue: {
+        Row: {
+          amount_cents: number
+          circle_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          learndat_id: string | null
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          circle_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          learndat_id?: string | null
+          source: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          circle_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          learndat_id?: string | null
+          source?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_revenue_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circle_pot_summary"
+            referencedColumns: ["circle_id"]
+          },
+          {
+            foreignKeyName: "platform_revenue_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_revenue_learndat_id_fkey"
+            columns: ["learndat_id"]
+            isOneToOne: false
+            referencedRelation: "learndat_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_revenue_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      playthrough_ledger: {
+        Row: {
+          bonus_amount: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          is_completed: boolean
+          played_amount: number
+          required_playthrough: number
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          bonus_amount: number
+          completed_at?: string | null
+          created_at?: string
+          currency: string
+          id?: string
+          is_completed?: boolean
+          played_amount?: number
+          required_playthrough: number
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          bonus_amount?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_completed?: boolean
+          played_amount?: number
+          required_playthrough?: number
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playthrough_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      power_move_usage: {
+        Row: {
+          circle_id: string | null
+          cost_paid: number
+          created_at: string
+          id: string
+          power_move_id: string
+          target_user_id: string | null
+          user_id: string
+        }
+        Insert: {
+          circle_id?: string | null
+          cost_paid: number
+          created_at?: string
+          id?: string
+          power_move_id: string
+          target_user_id?: string | null
+          user_id: string
+        }
+        Update: {
+          circle_id?: string | null
+          cost_paid?: number
+          created_at?: string
+          id?: string
+          power_move_id?: string
+          target_user_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "power_move_usage_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circle_pot_summary"
+            referencedColumns: ["circle_id"]
+          },
+          {
+            foreignKeyName: "power_move_usage_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_move_usage_power_move_id_fkey"
+            columns: ["power_move_id"]
+            isOneToOne: false
+            referencedRelation: "power_moves"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_move_usage_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_move_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       power_moves: {
         Row: {
           coin_cost: number
+          created_at: string
           description: string
           icon: string
           id: string
-          key: Database["public"]["Enums"]["power_move_key"]
+          is_active: boolean
+          key: string
           name: string
         }
         Insert: {
           coin_cost: number
+          created_at?: string
           description: string
           icon: string
           id?: string
-          key: Database["public"]["Enums"]["power_move_key"]
+          is_active?: boolean
+          key: string
           name: string
         }
         Update: {
           coin_cost?: number
+          created_at?: string
           description?: string
           icon?: string
           id?: string
-          key?: Database["public"]["Enums"]["power_move_key"]
+          is_active?: boolean
+          key?: string
           name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age_status: string
+          age_verification_method: string | null
+          age_verified_at: string | null
+          betdat_balance: number
+          betdat_bonus: number
+          betdat_earned: number
+          betit_balance: number
+          betit_bonus: number
+          betit_earned: number
+          can_redeem: boolean
+          created_at: string
+          date_of_birth: string | null
+          id: string
+          kyc_approved_at: string | null
+          kyc_attempts: number
+          kyc_level: string
+          kyc_provider: string | null
+          kyc_reference_id: string | null
+          kyc_rejected_at: string | null
+          kyc_rejection_reason: string | null
+          kyc_status: string
+          kyc_submitted_at: string | null
+          mode: string
+          provcoins_balance: number
+          updated_at: string
+        }
+        Insert: {
+          age_status?: string
+          age_verification_method?: string | null
+          age_verified_at?: string | null
+          betdat_balance?: number
+          betdat_bonus?: number
+          betdat_earned?: number
+          betit_balance?: number
+          betit_bonus?: number
+          betit_earned?: number
+          can_redeem?: boolean
+          created_at?: string
+          date_of_birth?: string | null
+          id: string
+          kyc_approved_at?: string | null
+          kyc_attempts?: number
+          kyc_level?: string
+          kyc_provider?: string | null
+          kyc_reference_id?: string | null
+          kyc_rejected_at?: string | null
+          kyc_rejection_reason?: string | null
+          kyc_status?: string
+          kyc_submitted_at?: string | null
+          mode?: string
+          provcoins_balance?: number
+          updated_at?: string
+        }
+        Update: {
+          age_status?: string
+          age_verification_method?: string | null
+          age_verified_at?: string | null
+          betdat_balance?: number
+          betdat_bonus?: number
+          betdat_earned?: number
+          betit_balance?: number
+          betit_bonus?: number
+          betit_earned?: number
+          can_redeem?: boolean
+          created_at?: string
+          date_of_birth?: string | null
+          id?: string
+          kyc_approved_at?: string | null
+          kyc_attempts?: number
+          kyc_level?: string
+          kyc_provider?: string | null
+          kyc_reference_id?: string | null
+          kyc_rejected_at?: string | null
+          kyc_rejection_reason?: string | null
+          kyc_status?: string
+          kyc_submitted_at?: string | null
+          mode?: string
+          provcoins_balance?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -552,6 +1383,53 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      redemption_requests: {
+        Row: {
+          admin_notes: string | null
+          amount_betit: number
+          amount_usd_cents: number
+          average_pot_at_request: number | null
+          created_at: string
+          id: string
+          processed_at: string | null
+          required_minimum: number | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount_betit: number
+          amount_usd_cents: number
+          average_pot_at_request?: number | null
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          required_minimum?: number | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount_betit?: number
+          amount_usd_cents?: number
+          average_pot_at_request?: number | null
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          required_minimum?: number | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemption_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -828,6 +1706,45 @@ export type Database = {
           },
         ]
       }
+      user_power_moves: {
+        Row: {
+          created_at: string
+          id: string
+          power_move_id: string
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          power_move_id: string
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          power_move_id?: string
+          quantity?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_power_moves_power_move_id_fkey"
+            columns: ["power_move_id"]
+            isOneToOne: false
+            referencedRelation: "power_moves"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_power_moves_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null
@@ -879,6 +1796,86 @@ export type Database = {
           updated_at?: string
           username?: string
           win_streak?: number
+        }
+        Relationships: []
+      }
+      winner_finder_competitors: {
+        Row: {
+          checked_at: string
+          id: string
+          price: number
+          product_id: string
+          seller_name: string | null
+          url: string | null
+        }
+        Insert: {
+          checked_at?: string
+          id?: string
+          price: number
+          product_id: string
+          seller_name?: string | null
+          url?: string | null
+        }
+        Update: {
+          checked_at?: string
+          id?: string
+          price?: number
+          product_id?: string
+          seller_name?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "winner_finder_competitors_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "winner_finder_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      winner_finder_products: {
+        Row: {
+          category: string | null
+          cost_price: number
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          saturation_score: number
+          shipping_cost: number
+          status: string
+          target_margin_pct: number
+          trend_score: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          cost_price?: number
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          saturation_score?: number
+          shipping_cost?: number
+          status?: string
+          target_margin_pct?: number
+          trend_score?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          cost_price?: number
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          saturation_score?: number
+          shipping_cost?: number
+          status?: string
+          target_margin_pct?: number
+          trend_score?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -978,6 +1975,14 @@ export type Database = {
         }
         Relationships: []
       }
+      current_redemption_minimum: {
+        Row: {
+          average_pot_cents: number | null
+          minimum_redemption_betit: number | null
+          minimum_redemption_cents: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_coins: {
@@ -990,7 +1995,24 @@ export type Database = {
         }
         Returns: Json
       }
+      add_soft_currency: {
+        Args: {
+          p_amount: number
+          p_currency: string
+          p_is_bonus: boolean
+          p_reference_id?: string
+          p_source?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      apply_playthrough: {
+        Args: { p_amount: number; p_currency: string; p_user_id: string }
+        Returns: undefined
+      }
       calculate_payout: { Args: { p_circle_id: string }; Returns: Json }
+      get_average_circle_pot: { Args: never; Returns: number }
+      is_circle_member: { Args: { p_circle_id: string }; Returns: boolean }
       issue_strike: {
         Args: {
           p_circle_id: string
@@ -1004,7 +2026,15 @@ export type Database = {
         Args: { p_proof_id: string; p_voter_id: string }
         Returns: Json
       }
+      request_redemption: {
+        Args: { p_amount_betit: number; p_user_id: string }
+        Returns: string
+      }
       resolve_expired_bombs: { Args: never; Returns: number }
+      resolve_learndat: {
+        Args: { p_learndat_id: string; p_winner_id: string }
+        Returns: undefined
+      }
       spend_coins: {
         Args: {
           p_amount: number
@@ -1015,6 +2045,17 @@ export type Database = {
         }
         Returns: Json
       }
+      update_coin_balance: {
+        Args: {
+          p_amount: number
+          p_currency: string
+          p_description?: string
+          p_reference_id?: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: number
+      }
       use_personal_challenge: {
         Args: {
           p_challenge_text: string
@@ -1023,6 +2064,15 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      use_power_move: {
+        Args: {
+          p_circle_id?: string
+          p_power_move_key: string
+          p_target_user_id?: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
       use_strike_back: {
         Args: { p_circle_id: string; p_user_id: string }
@@ -1078,23 +2128,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Database
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof Database
+  schema: keyof DatabaseWithoutInternals
 }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -1112,16 +2164,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof Database
+  schema: keyof DatabaseWithoutInternals
 }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -1137,16 +2189,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof Database
+  schema: keyof DatabaseWithoutInternals
 }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -1162,16 +2214,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof Database
+  schema: keyof DatabaseWithoutInternals
 }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -1179,16 +2231,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof Database
+  schema: keyof DatabaseWithoutInternals
 }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never

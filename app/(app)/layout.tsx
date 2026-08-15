@@ -8,14 +8,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/auth/login')
 
-  // Check onboarding complete
+  // Check onboarding complete (age gate + mode selection)
   const { data: profile } = await supabase
-    .from('users')
-    .select('is_18_verified')
+    .from('profiles')
+    .select('age_status')
     .eq('id', user.id)
     .single()
 
-  if (!profile?.is_18_verified) redirect('/onboarding')
+  if (!profile || profile.age_status === 'unknown') redirect('/onboarding')
 
   // Unread notification count
   const { count } = await supabase

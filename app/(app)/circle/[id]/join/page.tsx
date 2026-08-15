@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Shield, AlertTriangle } from 'lucide-react'
+import { ChevronLeft, Shield, AlertTriangle, ShieldAlert } from 'lucide-react'
 import JoinButton from './JoinButton'
+import FreeJoinButton from './FreeJoinButton'
+import Button from '@/components/ui/Button'
 
 export default async function JoinCirclePage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -29,11 +31,87 @@ export default async function JoinCirclePage({ params }: { params: { id: string 
     )
   }
 
+  const isRealMoneyCircle = circle.currency === 'usd'
+
+  // Real Money circles need Real Money Mode + full KYC before they can even see the payment screen.
+  if (isRealMoneyCircle) {
+    const { data: walletProfile } = await supabase.from('profiles').select('mode, kyc_status').eq('id', user.id).single()
+    const eligible = walletProfile?.mode === 'real_money' && walletProfile?.kyc_status === 'full_approved'
+    if (!eligible) {
+      return (
+        <div className="min-h-dvh bg-black flex flex-col items-center justify-center gap-4 px-6 text-center">
+          <ShieldAlert size={40} className="text-[#FFD700]" />
+          <div className="font-ops text-xl text-white">Verification Required</div>
+          <div className="font-oswald text-sm text-[#444] max-w-xs">
+            This is a Real Money Circle. You'll need Real Money Mode and ID verification to join.
+          </div>
+          <Link href="/kyc"><Button size="lg">
+            {walletProfile?.kyc_status === 'pending' ? 'Check Verification Status' : 'Verify Now'}
+          </Button></Link>
+          <Link href="/home" className="font-mono text-[10px] text-[#333] tracking-widest uppercase">← Back Home</Link>
+        </div>
+      )
+    }
+  }
+
   // Get member count for pot summary
   const { count: memberCount } = await supabase
     .from('circle_members')
     .select('*', { count: 'exact', head: true })
     .eq('circle_id', params.id)
+
+  const endDate = new Date(circle.end_date)
+  const startDate = new Date(circle.start_date)
+  const daysLeft = Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+
+  if (!isRealMoneyCircle) {
+    return (
+      <div className="min-h-dvh bg-black">
+        <div className="flex items-center gap-4 px-5 pt-12 pb-5 border-b border-[#0f0f0f]">
+          <Link href={`/circle/${params.id}`}><ChevronLeft size={22} className="text-[#333]" /></Link>
+          <div>
+            <h1 className="font-ops text-xl text-white">Join Circle</h1>
+            <p className="font-oswald text-xs text-[#00CFFF]">Free Mode · BetDat</p>
+          </div>
+        </div>
+
+        <div className="px-5 py-6 flex flex-col gap-5">
+          <div className="bg-[#060606] border border-[#0f0f0f] p-4">
+            <div className="font-ops text-base text-white mb-1">{circle.name}</div>
+            <div className="font-oswald text-sm text-[#444] mb-3">{circle.challenge}</div>
+            <div className="flex gap-4">
+              <div>
+                <div className="font-mono text-[9px] text-[#333] uppercase tracking-widest">Start</div>
+                <div className="font-ops text-sm text-white">{startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+              </div>
+              <div>
+                <div className="font-mono text-[9px] text-[#333] uppercase tracking-widest">Days Left</div>
+                <div className="font-ops text-sm text-[#00FF88]">{daysLeft}</div>
+              </div>
+              <div>
+                <div className="font-mono text-[9px] text-[#333] uppercase tracking-widest">Players</div>
+                <div className="font-ops text-sm text-white">{memberCount ?? 0}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#060606] border border-[#0f0f0f] p-4 flex items-center justify-between">
+            <span className="font-oswald text-sm text-[#555]">BetDat stake</span>
+            <span className="font-ops text-lg text-[#00CFFF]">{circle.buy_in_amount > 0 ? circle.buy_in_amount : 'Free'}</span>
+          </div>
+
+          <div className="flex items-start gap-3 bg-[#060606] border border-[#0f0f0f] p-4">
+            <Shield size={16} className="text-[#00CFFF] flex-shrink-0 mt-0.5" />
+            <div className="font-oswald text-xs text-[#444] leading-relaxed">
+              BetDat is not redeemable for cash. 3 strikes = eliminated (spectator status only).
+            </div>
+          </div>
+
+          <FreeJoinButton circleId={params.id} />
+        </div>
+      </div>
+    )
+  }
 
   const buyInCents = Math.round(circle.buy_in_amount * 100)
   const adminFeeCents = 199
@@ -44,17 +122,13 @@ export default async function JoinCirclePage({ params }: { params: { id: string 
   const platformFee = parseFloat((projectedPot * 0.10).toFixed(2))
   const winnerPayout = parseFloat((projectedPot - stripeFee - platformFee).toFixed(2))
 
-  const endDate = new Date(circle.end_date)
-  const startDate = new Date(circle.start_date)
-  const daysLeft = Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-
   return (
     <div className="min-h-dvh bg-black">
       <div className="flex items-center gap-4 px-5 pt-12 pb-5 border-b border-[#0f0f0f]">
         <Link href={`/circle/${params.id}`}><ChevronLeft size={22} className="text-[#333]" /></Link>
         <div>
           <h1 className="font-ops text-xl text-white">Join Circle</h1>
-          <p className="font-oswald text-xs text-[#444]">{circle.name}</p>
+          <p className="font-oswald text-xs text-[#00FF88]">Real Money · BetIt</p>
         </div>
       </div>
 

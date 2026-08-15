@@ -1,32 +1,32 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Shield, Bomb, Zap, Eye, Flame, Target, Crown } from 'lucide-react'
+import { Shield, Bomb, Zap, Eye, Search, Sparkles, Flame, Target, Crown, Dice5 } from 'lucide-react'
 
 type Member = { user_id: string; username: string; status: string }
 
 const MOVES = [
-  { key: 'strike_shield',  icon: Shield, cost: 300, label: 'Shield',   color: '#00CFFF', desc: 'Block next strike/bomb' },
-  { key: 'strike_bomb',    icon: Bomb,   cost: 500, label: 'Bomb',     color: '#FF003C', desc: 'Force 2hr proof window', requiresTarget: true },
-  { key: 'strike_back',    icon: Zap,    cost: 200, label: 'Strike ⚡', color: '#FFD700', desc: 'Remove 1 strike' },
-  { key: 'spy_mode',       icon: Eye,    cost: 100, label: 'Spy',      color: '#00CFFF', desc: 'See submission times', requiresTarget: true },
-  { key: 'double_points',  icon: Flame,  cost: 250, label: '2x PTS',   color: '#00FF88', desc: '2x points 24hrs' },
-  { key: 'personal_challenge', icon: Target, cost: 150, label: 'Challenge', color: '#FF003C', desc: 'Force mini-challenge', requiresTarget: true },
-  { key: 'crown_flex',     icon: Crown,  cost: 50,  label: 'Crown 👑', color: '#FFD700', desc: 'Crown on next proof' },
+  { key: 'strike_shield',     icon: Shield,  label: 'Shield',    color: '#00CFFF', desc: 'Block next strike/bomb' },
+  { key: 'strike_bomb',       icon: Bomb,    label: 'Bomb',      color: '#FF003C', desc: 'Force 2hr proof window', requiresTarget: true },
+  { key: 'strike_back',       icon: Zap,     label: 'Strike ⚡', color: '#FFD700', desc: 'Remove 1 strike' },
+  { key: 'spy_mode',          icon: Eye,     label: 'Spy',       color: '#00CFFF', desc: 'See submission times', requiresTarget: true },
+  { key: 'spy_reveal',        icon: Search,  label: 'Reveal',    color: '#00CFFF', desc: "See target's balance", requiresTarget: true },
+  { key: 'double_points',     icon: Sparkles,label: '2x PTS',    color: '#00FF88', desc: '2x points 24hrs' },
+  { key: 'double_intensity',  icon: Flame,   label: 'Intensify', color: '#FF003C', desc: 'Harder dare' },
+  { key: 'personal_challenge',icon: Target,  label: 'Challenge', color: '#FF003C', desc: 'Force mini-challenge', requiresTarget: true },
+  { key: 'crown_flex',        icon: Crown,   label: 'Crown 👑', color: '#FFD700', desc: 'Crown on next proof' },
+  { key: 'force_dare',        icon: Dice5,   label: 'Force Dare',color: '#FF003C', desc: 'Truth → Dare', requiresTarget: true },
 ]
 
 export default function CircleActions({
   circleId,
   userId,
   members,
-  membership,
 }: {
   circleId: string
   userId: string
   members: Member[]
   membership: any
 }) {
-  const supabase = createClient()
   const [selectedMove, setSelectedMove] = useState<string | null>(null)
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null)
   const [challengeText, setChallengeText] = useState('')
@@ -41,33 +41,30 @@ export default function CircleActions({
     setLoading(true)
     setResult(null)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rpc = (fn: string, args: Record<string, unknown>) => (supabase.rpc as any)(fn, args)
-    const fnMap: Record<string, () => PromiseLike<any>> = {
-      strike_shield: () => rpc('use_strike_shield', { p_user_id: userId, p_circle_id: circleId }),
-      strike_back:   () => rpc('use_strike_back',   { p_user_id: userId, p_circle_id: circleId }),
-      double_points: () => rpc('spend_coins', { p_user_id: userId, p_amount: 250, p_type: 'power_move', p_description: 'Double Points', p_circle_id: circleId }),
-      crown_flex:    () => rpc('spend_coins', { p_user_id: userId, p_amount: 50,  p_type: 'power_move', p_description: 'Crown Flex',    p_circle_id: circleId }),
-      spy_mode:      () => rpc('spend_coins', { p_user_id: userId, p_amount: 100, p_type: 'power_move', p_description: 'Spy Mode',      p_circle_id: circleId }),
-      strike_bomb:   () => rpc('use_strike_bomb', { p_user_id: userId, p_circle_id: circleId, p_target_id: selectedTarget }),
-      personal_challenge: () => rpc('use_personal_challenge', { p_user_id: userId, p_circle_id: circleId, p_target_id: selectedTarget, p_challenge_text: challengeText }),
+    const res = await fetch('/api/power-moves/fire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        moveKey: selectedMove,
+        circleId,
+        targetUserId: selectedTarget ?? undefined,
+        challengeText: challengeText || undefined,
+      }),
+    })
+    const data = await res.json()
+
+    let message = data?.success ? `${move?.label} activated!` : (data?.error ?? 'Something went wrong')
+    if (data?.success && selectedMove === 'spy_mode') {
+      message = data.lastSubmittedAt ? `Last seen ${new Date(data.lastSubmittedAt).toLocaleString()}` : 'No submissions yet.'
+    }
+    if (data?.success && selectedMove === 'spy_reveal') {
+      message = data.targetBalance != null ? `Balance: ${data.targetBalance} ${data.targetCurrency?.toUpperCase()}` : 'No data.'
     }
 
-    const fn = fnMap[selectedMove]
-    if (!fn) { setLoading(false); return }
-
-    const { data, error } = await fn()
-    const res = error ? { success: false, error: error.message } : data
-
-    setResult({
-      success: res?.success ?? false,
-      message: res?.success
-        ? `${move?.label} activated!`
-        : res?.error ?? 'Something went wrong',
-    })
+    setResult({ success: !!data?.success, message })
     setLoading(false)
-    if (res?.success) {
-      setTimeout(() => { setSelectedMove(null); setResult(null) }, 2000)
+    if (data?.success) {
+      setTimeout(() => { setSelectedMove(null); setResult(null) }, 2500)
     }
   }
 
@@ -76,7 +73,7 @@ export default function CircleActions({
       <h2 className="font-ops text-xs tracking-widest uppercase text-[#333] mb-3">Power Moves</h2>
 
       <div className="grid grid-cols-4 gap-1.5 mb-3">
-        {MOVES.map(({ key, icon: Icon, cost, label, color }) => (
+        {MOVES.map(({ key, icon: Icon, label, color }) => (
           <button
             key={key}
             onClick={() => setSelectedMove(selectedMove === key ? null : key)}
@@ -89,7 +86,6 @@ export default function CircleActions({
           >
             <Icon size={16} style={{ color }} />
             <span className="font-ops text-[9px] text-white tracking-widest text-center leading-tight">{label}</span>
-            <span className="font-mono text-[8px] text-[#333]">{cost}c</span>
           </button>
         ))}
       </div>
@@ -102,7 +98,6 @@ export default function CircleActions({
               <div className="font-ops text-sm text-white">{move.label}</div>
               <div className="font-oswald text-xs text-[#444]">{move.desc}</div>
             </div>
-            <div className="font-ops text-lg" style={{ color: move.color }}>{move.cost}c</div>
           </div>
 
           {/* Target selector */}
@@ -154,7 +149,7 @@ export default function CircleActions({
             disabled={loading || (!!move.requiresTarget && !selectedTarget) || (selectedMove === 'personal_challenge' && !challengeText)}
             className="w-full py-3 font-ops text-sm tracking-widest uppercase text-black bg-[#00FF88] disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
           >
-            {loading ? 'Executing...' : `Activate · ${move.cost} Coins`}
+            {loading ? 'Executing...' : 'Activate'}
           </button>
         </div>
       )}

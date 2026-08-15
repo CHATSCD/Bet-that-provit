@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const userId = session.metadata?.user_id
-  const productType = session.metadata?.product_type // 'provcoins' | 'betit'
+  const productType = session.metadata?.product_type // 'provcoins' | 'betit' | 'betdat'
   const amount = Number(session.metadata?.coin_amount || 0)
 
   if (!userId || !productType || !amount) {
@@ -78,10 +78,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     })
   }
 
-  if (productType === 'betit') {
+  if (productType === 'betit' || productType === 'betdat') {
     await supabase.rpc('add_soft_currency', {
       p_user_id: userId,
-      p_currency: 'betit',
+      p_currency: productType,
       p_amount: amount,
       p_is_bonus: true,
       p_source: 'purchase',
