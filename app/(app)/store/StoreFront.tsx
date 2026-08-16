@@ -1,65 +1,108 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Zap, Shield, Bomb, Zap as StrikeBack, Eye, Flame, Target, Crown, ChevronDown } from 'lucide-react'
+import { Gem, Shield, Bomb, Zap, Eye, Sparkles, Target, Crown, Search, Dice5, Flame, ChevronDown, Brain, Package } from 'lucide-react'
 import Link from 'next/link'
 
 const MOVE_ICONS: Record<string, any> = {
-  strike_shield:       Shield,
-  strike_bomb:         Bomb,
-  strike_back:         StrikeBack,
-  spy_mode:            Eye,
-  double_points:       Flame,
-  personal_challenge:  Target,
-  crown_flex:          Crown,
+  strike_shield:      Shield,
+  strike_bomb:        Bomb,
+  strike_back:        Zap,
+  spy_mode:           Eye,
+  spy_reveal:         Search,
+  double_points:      Sparkles,
+  double_intensity:   Flame,
+  personal_challenge: Target,
+  crown_flex:         Crown,
+  force_dare:         Dice5,
+  learndat:           Brain,
 }
 
 const MOVE_COLORS: Record<string, string> = {
-  strike_shield:       '#00CFFF',
-  strike_bomb:         '#FF003C',
-  strike_back:         '#FFD700',
-  spy_mode:            '#00CFFF',
-  double_points:       '#00FF88',
-  personal_challenge:  '#FF003C',
-  crown_flex:          '#FFD700',
+  strike_shield:      '#00CFFF',
+  strike_bomb:        '#FF003C',
+  strike_back:        '#FFD700',
+  spy_mode:           '#00CFFF',
+  spy_reveal:         '#00CFFF',
+  double_points:      '#00FF88',
+  double_intensity:   '#FF003C',
+  personal_challenge: '#FF003C',
+  crown_flex:         '#FFD700',
+  force_dare:         '#FF003C',
+  learndat:           '#00FF88',
 }
+
+const TIERS: { qty: number; discount: number }[] = [
+  { qty: 1, discount: 1 },
+  { qty: 5, discount: 0.9 },
+  { qty: 10, discount: 0.8 },
+]
+
+const TARGET_REQUIRED = new Set(['spy_mode', 'spy_reveal', 'personal_challenge', 'strike_bomb', 'force_dare'])
+const CIRCLE_REQUIRED = new Set(['strike_bomb', 'strike_shield', 'strike_back', 'personal_challenge', 'crown_flex', 'double_points'])
 
 type PowerMove = { id: string; key: string; name: string; description: string; icon: string; coin_cost: number }
 type Circle    = { id: string; name: string }
 
 export default function StoreFront({
   userId,
-  coinBalance,
+  provcoinsBalance,
   powerMoves,
+  ownedByMoveId,
   activeCircles,
 }: {
   userId: string
-  coinBalance: number
+  provcoinsBalance: number
   powerMoves: PowerMove[]
+  ownedByMoveId: Record<string, number>
   activeCircles: Circle[]
 }) {
   const supabase = createClient()
-  const [balance, setBalance] = useState(coinBalance)
+  const [balance, setBalance] = useState(provcoinsBalance)
+  const [owned, setOwned] = useState(ownedByMoveId)
+  const [buyingMove, setBuyingMove] = useState<PowerMove | null>(null)
+  const [buyLoading, setBuyLoading] = useState(false)
+
   const [selectedMove, setSelectedMove] = useState<PowerMove | null>(null)
   const [selectedCircle, setSelectedCircle] = useState<string>(activeCircles[0]?.id ?? '')
   const [selectedTarget, setSelectedTarget] = useState<string>('')
   const [circleMembers, setCircleMembers] = useState<{ user_id: string; username: string }[]>([])
   const [challengeText, setChallengeText] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [fireLoading, setFireLoading] = useState(false)
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
 
   function showToast(msg: string, ok: boolean) {
     setToast({ msg, ok })
-    setTimeout(() => setToast(null), 2500)
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  async function buyKit(tierQty: number) {
+    if (!buyingMove) return
+    setBuyLoading(true)
+    const res = await fetch('/api/power-moves/buy-kit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ moveKey: buyingMove.key, tier: tierQty }),
+    })
+    const data = await res.json()
+    if (data.success) {
+      setBalance(b => b - data.pricePaid)
+      setOwned(o => ({ ...o, [buyingMove.id]: data.quantity }))
+      showToast(`Bought ${tierQty}x ${buyingMove.name}!`, true)
+      setBuyingMove(null)
+    } else {
+      showToast(data.error ?? 'Purchase failed', false)
+    }
+    setBuyLoading(false)
   }
 
   async function onSelectMove(move: PowerMove) {
+    if (move.key === 'learndat') return // handled via its own link
     setSelectedMove(move)
     setSelectedTarget('')
     setChallengeText('')
 
-    const needsTarget = ['strike_bomb', 'spy_mode', 'personal_challenge'].includes(move.key)
-    if (needsTarget && selectedCircle) {
+    if (TARGET_REQUIRED.has(move.key) && selectedCircle) {
       const { data } = await supabase
         .from('circle_leaderboard')
         .select('user_id, username')
@@ -70,48 +113,51 @@ export default function StoreFront({
     }
   }
 
-  async function execute() {
+  async function fire() {
     if (!selectedMove) return
-    setLoading(true)
+    setFireLoading(true)
 
-    const fnMap: Record<string, () => Promise<any>> = {
-      strike_shield:      () => supabase.rpc('use_strike_shield',        { p_user_id: userId, p_circle_id: selectedCircle }),
-      strike_back:        () => supabase.rpc('use_strike_back',          { p_user_id: userId, p_circle_id: selectedCircle }),
-      double_points:      () => supabase.rpc('spend_coins',              { p_user_id: userId, p_amount: 250, p_type: 'power_move', p_description: 'Double Points', p_circle_id: selectedCircle }),
-      crown_flex:         () => supabase.rpc('spend_coins',              { p_user_id: userId, p_amount: 50,  p_type: 'power_move', p_description: 'Crown Flex',    p_circle_id: selectedCircle }),
-      spy_mode:           () => supabase.rpc('spend_coins',              { p_user_id: userId, p_amount: 100, p_type: 'power_move', p_description: 'Spy Mode',      p_circle_id: selectedCircle }),
-      strike_bomb:        () => supabase.rpc('use_strike_bomb',          { p_user_id: userId, p_circle_id: selectedCircle, p_target_id: selectedTarget }),
-      personal_challenge: () => supabase.rpc('use_personal_challenge',   { p_user_id: userId, p_circle_id: selectedCircle, p_target_id: selectedTarget, p_challenge_text: challengeText }),
-    }
+    const res = await fetch('/api/power-moves/fire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        moveKey: selectedMove.key,
+        circleId: selectedCircle || undefined,
+        targetUserId: selectedTarget || undefined,
+        challengeText: challengeText || undefined,
+      }),
+    })
+    const data = await res.json()
 
-    const fn = fnMap[selectedMove.key]
-    if (!fn) { setLoading(false); return }
-
-    const { data, error } = await fn()
-    const res = error ? { success: false, error: error.message } : data
-
-    if (res?.success) {
-      setBalance(b => b - selectedMove.coin_cost)
-      showToast(`${selectedMove.icon} ${selectedMove.name} activated!`, true)
+    if (data.success) {
+      setOwned(o => ({ ...o, [selectedMove.id]: data.remainingQuantity }))
+      let msg = `${selectedMove.icon} ${selectedMove.name} activated!`
+      if (selectedMove.key === 'spy_mode') {
+        msg = data.lastSubmittedAt ? `Last seen ${new Date(data.lastSubmittedAt).toLocaleString()}` : 'No submissions yet.'
+      }
+      if (selectedMove.key === 'spy_reveal') {
+        msg = data.targetBalance != null ? `Balance: ${data.targetBalance} ${data.targetCurrency?.toUpperCase()}` : 'No data.'
+      }
+      showToast(msg, true)
       setSelectedMove(null)
     } else {
-      showToast(res?.error ?? 'Failed', false)
+      showToast(data?.error ?? 'Failed', false)
     }
-    setLoading(false)
+    setFireLoading(false)
   }
 
-  const requiresTarget = selectedMove ? ['strike_bomb', 'spy_mode', 'personal_challenge'].includes(selectedMove.key) : false
-  const canExecute = selectedMove
-    && selectedCircle
+  const requiresTarget = selectedMove ? TARGET_REQUIRED.has(selectedMove.key) : false
+  const requiresCircle = selectedMove ? CIRCLE_REQUIRED.has(selectedMove.key) : false
+  const canFire = selectedMove
+    && (!requiresCircle || selectedCircle)
     && (!requiresTarget || selectedTarget)
     && (selectedMove.key !== 'personal_challenge' || challengeText.trim())
-    && balance >= selectedMove.coin_cost
 
   return (
     <div className="min-h-dvh bg-black">
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 font-ops text-sm tracking-widest ${toast.ok ? 'bg-[#00FF88] text-black' : 'bg-[#FF003C] text-white'}`}>
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 font-ops text-sm tracking-widest text-center ${toast.ok ? 'bg-[#00FF88] text-black' : 'bg-[#FF003C] text-white'}`}>
           {toast.msg}
         </div>
       )}
@@ -122,9 +168,9 @@ export default function StoreFront({
         <div className="flex items-center justify-between">
           <h1 className="font-ops text-2xl text-white">The Arsenal</h1>
           <Link href="/wallet" className="flex items-center gap-1.5 bg-[#0a0a0a] border border-[#1a1a1a] px-3 py-2">
-            <Zap size={12} className="text-[#FFD700]" />
+            <Gem size={12} className="text-[#FFD700]" />
             <span className="font-ops text-sm text-[#FFD700]">{balance}</span>
-            <span className="font-mono text-[9px] text-[#333] uppercase tracking-widest">coins</span>
+            <span className="font-mono text-[9px] text-[#333] uppercase tracking-widest">provcoins</span>
           </Link>
         </div>
       </div>
@@ -161,20 +207,18 @@ export default function StoreFront({
         {/* Move grid */}
         <div className="flex flex-col gap-2">
           {powerMoves.map(move => {
-            const Icon = MOVE_ICONS[move.key] ?? Zap
+            const Icon = MOVE_ICONS[move.key] ?? Gem
             const color = MOVE_COLORS[move.key] ?? '#00FF88'
             const isSelected = selectedMove?.key === move.key
-            const canAfford = balance >= move.coin_cost
+            const isLearnDat = move.key === 'learndat'
+            const qty = owned[move.id] ?? 0
 
             return (
-              <button
+              <div
                 key={move.key}
-                onClick={() => onSelectMove(move)}
-                disabled={!canAfford || !selectedCircle}
                 className={[
-                  'w-full flex items-center gap-4 p-4 border transition-all text-left active:scale-[0.98]',
+                  'flex items-center gap-4 p-4 border transition-all',
                   isSelected ? 'border-[#00FF88] bg-[rgba(0,255,136,0.04)]' : 'border-[#0f0f0f] bg-[#060606]',
-                  !canAfford ? 'opacity-30' : 'hover:border-[#1a1a1a]',
                 ].join(' ')}
               >
                 <div
@@ -186,25 +230,76 @@ export default function StoreFront({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-ops text-base text-white">{move.icon} {move.name}</span>
+                    <span className="font-mono text-[9px] px-1.5 py-0.5 border border-[#1a1a1a] text-[#555] uppercase tracking-widest">
+                      Owned {qty}
+                    </span>
                   </div>
                   <div className="font-oswald text-xs text-[#444] mt-0.5 leading-snug">{move.description}</div>
                 </div>
-                <div className="flex-shrink-0 text-right">
-                  <div className="font-ops text-base" style={{ color: canAfford ? color : '#333' }}>
-                    {move.coin_cost}
-                  </div>
-                  <div className="font-mono text-[9px] text-[#333]">coins</div>
+                <div className="flex-shrink-0 flex flex-col gap-1.5 items-stretch">
+                  <button
+                    onClick={() => setBuyingMove(move)}
+                    className="flex items-center gap-1 px-3 py-1.5 border border-[#1a1a1a] font-mono text-[9px] tracking-widest uppercase text-[#00FF88] hover:border-[#00FF88] transition-colors"
+                  >
+                    <Package size={10} /> Buy Kit
+                  </button>
+                  {isLearnDat ? (
+                    <Link
+                      href="/learndat/new"
+                      className="text-center px-3 py-1.5 bg-[#00FF88] font-mono text-[9px] tracking-widest uppercase text-black"
+                    >
+                      Challenge
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => onSelectMove(move)}
+                      disabled={qty <= 0 || (CIRCLE_REQUIRED.has(move.key) && !selectedCircle)}
+                      className="px-3 py-1.5 bg-[#00FF88] font-mono text-[9px] tracking-widest uppercase text-black disabled:opacity-20 disabled:cursor-not-allowed"
+                    >
+                      Fire
+                    </button>
+                  )}
                 </div>
-              </button>
+              </div>
             )
           })}
         </div>
+
+        {/* Buy kit panel */}
+        {buyingMove && (
+          <div className="bg-[#060606] border border-[#1a1a1a] p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="font-mono text-[10px] text-[#00FF88] uppercase tracking-widest">
+                Buy {buyingMove.name} Kit
+              </div>
+              <button onClick={() => setBuyingMove(null)} className="font-mono text-[9px] text-[#333] uppercase tracking-widest">Cancel</button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {TIERS.map(t => {
+                const price = Math.round(buyingMove.coin_cost * t.qty * t.discount)
+                const canAfford = balance >= price
+                return (
+                  <button
+                    key={t.qty}
+                    onClick={() => buyKit(t.qty)}
+                    disabled={buyLoading || !canAfford}
+                    className="flex flex-col items-center gap-1 py-3 border border-[#1a1a1a] hover:border-[#00FF88] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <span className="font-ops text-lg text-white">{t.qty}x</span>
+                    {t.discount < 1 && <span className="font-mono text-[8px] text-[#00FF88]">{Math.round((1 - t.discount) * 100)}% off</span>}
+                    <span className="font-mono text-[10px] text-[#FFD700]">{price}pc</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Activation panel */}
         {selectedMove && (
           <div className="bg-[#060606] border border-[#1a1a1a] p-4 flex flex-col gap-4">
             <div className="font-mono text-[10px] text-[#00FF88] uppercase tracking-widest">
-              Activating: {selectedMove.name}
+              Activating: {selectedMove.name} · {owned[selectedMove.id] ?? 0} owned
             </div>
 
             {requiresTarget && (
@@ -262,17 +357,17 @@ export default function StoreFront({
                 Cancel
               </button>
               <button
-                onClick={execute}
-                disabled={!canExecute || loading}
+                onClick={fire}
+                disabled={!canFire || fireLoading}
                 className="flex-1 py-3 bg-[#00FF88] font-ops text-sm tracking-widest uppercase text-black disabled:opacity-30 active:scale-95 transition-all"
               >
-                {loading ? (
+                {fireLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />
                     Activating...
                   </span>
                 ) : (
-                  `Fire · ${selectedMove.coin_cost}c`
+                  'Fire · Free'
                 )}
               </button>
             </div>

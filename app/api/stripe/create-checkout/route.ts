@@ -1,8 +1,7 @@
 // app/api/stripe/create-checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
@@ -15,10 +14,13 @@ const PACKAGES = {
   betit_2500:     { coins: 2500, price: 499,  type: 'betit' },
   betit_12000:    { coins: 12000,price: 1999, type: 'betit' },
   betit_40000:    { coins: 40000,price: 4999, type: 'betit' },
+  betdat_2500:    { coins: 2500, price: 199,  type: 'betdat' },
+  betdat_12000:   { coins: 12000,price: 799,  type: 'betdat' },
+  betdat_40000:   { coins: 40000,price: 1999, type: 'betdat' },
 } as const
 
 export async function POST(req: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies })
+  const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
@@ -32,6 +34,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid package' }, { status: 400 })
   }
 
+  const PRODUCT_NAME: Record<typeof pkg.type, string> = {
+    provcoins: 'ProvCoins',
+    betit: 'BetIt Coins',
+    betdat: 'BetDat Coins',
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card'],
@@ -40,7 +48,7 @@ export async function POST(req: NextRequest) {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: pkg.type === 'provcoins' ? `\( {pkg.coins} ProvCoins` : ` \){pkg.coins} BetIt Coins`,
+            name: `${pkg.coins} ${PRODUCT_NAME[pkg.type]}`,
           },
           unit_amount: pkg.price,
         },

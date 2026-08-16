@@ -6,6 +6,7 @@ import RealtimeLeaderboard from '@/components/circle/RealtimeLeaderboard'
 import ProofCard from '@/components/circle/ProofCard'
 import CircleActions from './CircleActions'
 import CopyButton from '@/components/circle/CopyButton'
+import CircleModeBadge from '@/components/circle/CircleModeBadge'
 
 export default async function CirclePage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -36,12 +37,18 @@ export default async function CirclePage({ params }: { params: { id: string } })
   const activeMemberCount = leaderboard?.filter(m => m.status === 'active').length ?? 0
 
   const myMember = leaderboard?.find(m => m.user_id === user.id)
-  const { data: activeBombs } = await supabase
-    .from('strike_bombs')
-    .select('*')
-    .eq('circle_id', params.id)
-    .eq('target_id', user.id)
-    .eq('status', 'active')
+  const [{ data: activeBombs }, { data: powerMoves }, { data: inventory }] = await Promise.all([
+    supabase.from('strike_bombs')
+      .select('*')
+      .eq('circle_id', params.id)
+      .eq('target_id', user.id)
+      .eq('status', 'active'),
+    supabase.from('power_moves').select('id, key').eq('is_active', true),
+    supabase.from('user_power_moves').select('power_move_id, quantity').eq('user_id', user.id),
+  ])
+  const ownedByKey = Object.fromEntries(
+    (powerMoves ?? []).map(m => [m.key, inventory?.find(i => i.power_move_id === m.id)?.quantity ?? 0])
+  )
 
   const calloutText = `${myMember?.username ?? 'Someone'} just wagered $${circle.buy_in_amount} on a "${circle.name}" arena and called you out. You have until ${startDate.toLocaleDateString()} to match the buy-in or openly admit you're soft. Lock in at illprovit.app using access code: ${circle.invite_code} #BetThat`
 
@@ -70,11 +77,16 @@ export default async function CirclePage({ params }: { params: { id: string } })
         <div className="flex items-center gap-3 mb-4">
           <Link href="/home"><ChevronLeft size={22} className="text-[#333]" /></Link>
           <div className="flex-1 min-w-0">
-            <h1 className="font-ops text-xl text-white truncate">{circle.name}</h1>
+            <div className="flex items-center gap-2 mb-0.5">
+              <h1 className="font-ops text-xl text-white truncate">{circle.name}</h1>
+              <CircleModeBadge currency={circle.currency} />
+            </div>
             <p className="font-oswald text-xs text-[#444] truncate">{circle.challenge}</p>
           </div>
           <div className="flex-shrink-0 text-right">
-            <div className="font-ops text-lg text-[#00FF88]">${circle.buy_in_amount}</div>
+            <div className="font-ops text-lg text-[#00FF88]">
+              {circle.currency === 'usd' ? `$${circle.buy_in_amount}` : `${circle.buy_in_amount} BD`}
+            </div>
             <div className="font-mono text-[9px] text-[#333] uppercase tracking-widest">{daysLeft}d left</div>
           </div>
         </div>
@@ -82,7 +94,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
         {/* Pot summary */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: 'Pot', value: `$${(circle.buy_in_amount * (leaderboard?.length ?? 0)).toFixed(0)}` },
+            { label: 'Pot', value: circle.currency === 'usd' ? `$${(circle.buy_in_amount * (leaderboard?.length ?? 0)).toFixed(0)}` : `${circle.buy_in_amount * (leaderboard?.length ?? 0)} BD` },
             { label: 'Players', value: activeMemberCount },
             { label: 'Status', value: circle.status.toUpperCase() },
           ].map(({ label, value }) => (
@@ -118,7 +130,9 @@ export default async function CirclePage({ params }: { params: { id: string } })
               <div className="flex-1">
                 <div className="font-ops text-base text-black">Join This Circle</div>
                 <div className="font-mono text-[10px] text-black opacity-60">
-                  ${circle.buy_in_amount} buy-in + $1.99 admin fee
+                  {circle.currency === 'usd'
+                    ? `$${circle.buy_in_amount} buy-in + $1.99 admin fee`
+                    : circle.buy_in_amount > 0 ? `${circle.buy_in_amount} BetDat stake` : 'Free to join'}
                 </div>
               </div>
               <span className="font-ops text-sm text-black">#BetThat →</span>
@@ -136,7 +150,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
         </section>
 
         {/* Power Moves */}
-        {isMember && <CircleActions circleId={params.id} userId={user.id} members={leaderboard ?? []} membership={membership} />}
+        {isMember && <CircleActions circleId={params.id} userId={user.id} members={leaderboard ?? []} membership={membership} ownedByKey={ownedByKey} />}
 
         {/* Invite */}
         {isMember && (
