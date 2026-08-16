@@ -1,20 +1,78 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
+  const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
+  const [oauthError, setOauthError] = useState('')
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [checkYourEmail, setCheckYourEmail] = useState(false)
   const supabase = createClient()
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const err = params.get('error')
+    if (err) setOauthError(err)
+  }, [])
 
   async function signIn(provider: 'google' | 'apple') {
     setLoading(provider)
-    await supabase.auth.signInWithOAuth({
+    setOauthError('')
+    const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: provider === 'apple' ? { response_mode: 'form_post' } : undefined,
       },
     })
+    if (error) {
+      setOauthError(error.message)
+      setLoading(null)
+    }
+    // On success the browser navigates away to the provider — no need to reset loading.
+  }
+
+  async function handleEmailAuth() {
+    setEmailError('')
+    setCheckYourEmail(false)
+    if (!email || !password) { setEmailError('Enter an email and password'); return }
+    if (mode === 'signup' && password.length < 6) { setEmailError('Password must be at least 6 characters'); return }
+
+    setLoading('email')
+
+    if (mode === 'signin') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setEmailError(error.message)
+        setLoading(null)
+        return
+      }
+      router.push('/home')
+      router.refresh()
+    } else {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      })
+      if (error) {
+        setEmailError(error.message)
+        setLoading(null)
+        return
+      }
+      if (data.session) {
+        router.push('/onboarding')
+        router.refresh()
+      } else {
+        setCheckYourEmail(true)
+        setLoading(null)
+      }
+    }
   }
 
   return (
@@ -55,6 +113,12 @@ export default function LoginPage() {
 
       {/* Auth buttons */}
       <div className="w-full max-w-sm flex flex-col gap-3">
+        {oauthError && (
+          <div className="bg-[rgba(255,0,60,0.08)] border border-[rgba(255,0,60,0.3)] px-4 py-3">
+            <p className="font-mono text-[11px] text-[#FF003C] leading-relaxed">{oauthError}</p>
+          </div>
+        )}
+
         <button
           onClick={() => signIn('google')}
           disabled={loading !== null}
@@ -87,6 +151,64 @@ export default function LoginPage() {
           )}
           Continue with Apple
         </button>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-1">
+          <div className="flex-1 h-px bg-[#1a1a1a]" />
+          <span className="font-mono text-[9px] text-[#333] tracking-widest uppercase">or</span>
+          <div className="flex-1 h-px bg-[#1a1a1a]" />
+        </div>
+
+        {/* Email / password */}
+        {checkYourEmail ? (
+          <div className="bg-[rgba(0,255,136,0.05)] border border-[rgba(0,255,136,0.2)] px-4 py-4 text-center">
+            <p className="font-ops text-sm text-[#00FF88] mb-1">Check your inbox</p>
+            <p className="font-oswald text-xs text-[#555]">We sent a confirmation link to {email}.</p>
+          </div>
+        ) : (
+          <>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="Email"
+              autoComplete="email"
+              className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-oswald text-sm px-4 py-3.5 outline-none focus:border-[#00FF88] transition-colors placeholder:text-[#333]"
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Password"
+              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+              onKeyDown={e => e.key === 'Enter' && handleEmailAuth()}
+              className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-oswald text-sm px-4 py-3.5 outline-none focus:border-[#00FF88] transition-colors placeholder:text-[#333]"
+            />
+
+            {emailError && (
+              <p className="font-mono text-[11px] text-[#FF003C] tracking-wide">{emailError}</p>
+            )}
+
+            <button
+              onClick={handleEmailAuth}
+              disabled={loading !== null}
+              className="w-full py-4 bg-[#00FF88] text-black font-ops text-sm tracking-widest uppercase disabled:opacity-40 active:scale-95 transition-transform"
+            >
+              {loading === 'email' ? (
+                <span className="flex items-center justify-center">
+                  <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                </span>
+              ) : mode === 'signin' ? 'Sign In' : 'Create Account'}
+            </button>
+
+            <button
+              onClick={() => { setMode(m => m === 'signin' ? 'signup' : 'signin'); setEmailError('') }}
+              className="font-mono text-[10px] text-[#333] tracking-widest uppercase text-center hover:text-[#00FF88] transition-colors"
+            >
+              {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+            </button>
+          </>
+        )}
 
         <p className="text-center font-mono text-[10px] text-[#1a1a1a] mt-2 leading-relaxed">
           By continuing you agree to our Terms of Service. Must be 18+ to participate in paid circles.
