@@ -31,7 +31,14 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
-  const isPublicPath = pathname.startsWith('/auth') || pathname === '/' || pathname.startsWith('/api')
+  // /retail is a rewrite target (see next.config.js) proxying to a separate
+  // marketing site with no accounts of its own — must stay public or this
+  // gate redirects every visitor to /auth/login before the rewrite serves it.
+  const isPublicPath =
+    pathname.startsWith('/auth') ||
+    pathname === '/' ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/retail')
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone()
