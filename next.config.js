@@ -15,31 +15,23 @@ const nextConfig = {
   experimental: {
     serverActions: { allowedOrigins: ['localhost:3000', 'illprovit.vercel.app'] },
   },
-  // The /retail rewrite target's own root route naturally redirects bare
-  // "/retail" to "/retail/" when hit directly. Without this, Next's default
-  // trailing-slash normalization (which strips slashes) fights that the
-  // opposite way once the request is proxied, producing an infinite
-  // /retail <-> /retail/ loop. This only stops Next from injecting its own
-  // trailing-slash redirects — it doesn't change any existing route's
-  // behavior, since none of this app's pages are linked with a trailing
-  // slash. The explicit redirect below replaces what Next would have done
-  // automatically, but scoped to just this one path.
+  // Stops Next injecting its own automatic trailing-slash redirect ahead of
+  // the rewrite below — doesn't change any existing route's behavior, since
+  // none of this app's pages are linked with a trailing slash.
   skipTrailingSlashRedirect: true,
-  async redirects() {
-    return [
-      {
-        source: '/retail',
-        destination: '/retail/',
-        permanent: false,
-      },
-    ]
-  },
   // Vercel multi-zone: /retail proxies to the ProveIt foodservice landing
   // page + ROI calculator, a separate Vercel project/repo built to run
   // under this exact prefix (VITE_BASE_PATH=/retail — see its README).
-  // Only the trailing-slash form is rewritten — the bare form is handled by
-  // the redirect above, so the rewrite target's own root route is never
-  // asked to redirect (that's what looped in the first place).
+  //
+  // One rule, deliberately not two: Next's redirect/rewrite `source`
+  // matching is trailing-slash-*insensitive* (a `source: '/retail'` rule
+  // matches "/retail/" too), so an earlier version of this that split bare
+  // "/retail" (redirect) from "/retail/:path*" (rewrite) into separate
+  // rules had the redirect rule catching its own already-slashed output and
+  // looping forever. A single `:path*` rule sidesteps that entirely — the
+  // trailing `*` makes the preceding slash optional, so it matches "/retail"
+  // and "/retail/foo" alike, and always proxies straight to the target's
+  // already-slashed root — no redirect, no ambiguity, nothing to loop.
   async rewrites() {
     return [
       {
